@@ -12,6 +12,11 @@ workspace "Seagull"
 -- Debug-windows-x64
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = { }
+IncludeDir["spdlog"] = "Seagull Core/vendor/spdlog/include"
+
+group "Dependencies"
+
+group ""
 
 project "Seagull Core"
     location "Seagull Core"
@@ -46,6 +51,7 @@ project "Seagull Core"
     includedirs
     {
         "%{prj.name}/src",
+        "%{IncludeDir.spdlog}"
     }
 
     -- link libraries
@@ -99,7 +105,8 @@ project "Sea"
     -- include directories
     includedirs
     {
-        "Seagull Core/src"
+        "Seagull Core/src",
+        "%{IncludeDir.spdlog}"
     }
 
     -- link libraries
