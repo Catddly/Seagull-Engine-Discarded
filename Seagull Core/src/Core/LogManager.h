@@ -9,7 +9,7 @@
 namespace SG
 {
 	// Only one global logger
-	class LogManager
+	class LogManager final
 	{
 	public:
 		LogManager() = default;

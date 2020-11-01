@@ -60,7 +60,8 @@ filter "system:windows"
     systemversion "latest"
     defines
     {
-        "SG_PLATFORM_WINDOWS"
+        "SG_PLATFORM_WINDOWS",
+        "SG_GRAPHIC_API_DX12"
     }
 
 filter "configurations:Debug"
@@ -85,7 +86,7 @@ filter "configurations:Dist"
     
 project "Sea"
     location "Sea"
-    kind "ConsoleApp"
+    kind "WindowedApp"
     language "C++"
     cppdialect "C++17"
     staticruntime "on"

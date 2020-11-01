@@ -2,11 +2,14 @@
 
 #include "Core.h"
 #include "Event/Event.h"
+#include "utilis/Timestep.h"
+#include "Window.h"
 
 #include <string>
 
 namespace SG
 {
+	using namespace Utils;
 	// Only one application
 	class Application
 	{
@@ -15,17 +18,21 @@ namespace SG
 		Application(const Application&) = delete;
 		virtual ~Application() = default;
 
-		void Init();
-		void Run();
+		bool Init(const HINSTANCE& wndInstance, int show);
+		int Run();
 		void Shutdown();
 
-		void OnEvent(Event& e);
+		virtual void OnEvent(Event& e) {}
+		virtual void OnUpdate(Timestep ts) {}
 
 		Application operator=(const Application& app) = delete;
 	private:
 		static std::string s_AppName;
 		static Application* s_Instance;
 		static bool s_IsRunning;
+
+		Scope<Window> m_MainWindow;
+		WindowProps m_MainWndProps;
 	};
 
 	// To be define in client side

@@ -43,7 +43,7 @@ namespace SG
 		virtual std::string ToString() const { return GetName(); }
 
 		inline bool IsInCategory(EventCategory cat) { return cat & GetCategoryFlag(); }
-		inline bool IsHandled(Event e) { return m_IsHandled; }
+		inline bool IsHandled() { return m_IsHandled; }
 
 	protected:
 		bool m_IsHandled = false;
