@@ -4,8 +4,6 @@
 #include "LogManager.h"
 #include "utilis/Timestep.h"
 
-#include "utilis/Conversion.h"
-
 namespace SG
 {
 	std::string Application::s_AppName = "";
@@ -16,12 +14,15 @@ namespace SG
 	{
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;
+		s_AppName = name;
 	}
 
 	bool Application::Init(const HINSTANCE& wndInstance, int show)
 	{
 		// LogManager initialized
 		SG::LogManager::Init();
+
+		//AllocConsole();
 
 		WindowProps m_MainWndProps = WindowProps(wndInstance, show);
 		m_MainWindow = Window::Create(m_MainWndProps);
@@ -34,8 +35,6 @@ namespace SG
 
 	int Application::Run()
 	{
-		SG_CORE_TRACE("Welcome to Seagull Engine! Name: {0}", s_AppName);
-
 		MSG msg = {0};
 
 		// until receive WM_QUIT, if will keep looping
@@ -51,6 +50,8 @@ namespace SG
 			{
 				// main game loop
 				m_MainWindow->OnUpdate();
+				SG_CORE_TRACE("Welcome to Seagull Engine! Name: {0}", s_AppName);
+				Sleep(1000);
 			}
 
 		}
@@ -60,6 +61,7 @@ namespace SG
 
 	void Application::Shutdown()
 	{
+		//FreeConsole();
 	}
 
 }

@@ -124,6 +124,7 @@ filter "configurations:Debug"
     defines "SG_DEBUG"
     runtime "Debug"
     symbols "on"
+    postbuildcommands { "editbin/subsystem:console $(OutDir)$(ProjectName).exe" } -- enable console
 
 filter "configurations:Release"
     defines "SG_RELEASE"
