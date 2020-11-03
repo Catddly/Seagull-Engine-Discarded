@@ -17,7 +17,7 @@ namespace SG
 		virtual bool OnCreate() override;
 		virtual void OnUpdate() override;
 
-		virtual inline uint32_t GetWidth() const override { return m_WndProps.Width; }
+		virtual inline uint32_t GetWidth()  const override { return m_WndProps.Width; }
 		virtual inline uint32_t GetHeight() const override { return m_WndProps.Height; }
 
 		virtual inline void* GetNativeWindow() const { return m_MainWnd; }

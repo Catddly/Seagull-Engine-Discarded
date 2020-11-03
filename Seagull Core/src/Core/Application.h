@@ -5,6 +5,8 @@
 #include "utilis/Timestep.h"
 #include "Window.h"
 
+#include "LayerStack.h"
+
 #include <string>
 
 namespace SG
@@ -22,6 +24,9 @@ namespace SG
 		int Run();
 		void Shutdown();
 
+		void PushLayer(Layer* layer) noexcept;
+		void PushOverlay(Layer* layer) noexcept;
+
 		virtual void OnEvent(Event& e) {}
 		virtual void OnUpdate(Timestep ts) {}
 
@@ -33,6 +38,8 @@ namespace SG
 
 		Scope<Window> m_MainWindow;
 		WindowProps m_MainWndProps;
+
+		LayerStack m_LayerStack;
 	};
 
 	// To be define in client side

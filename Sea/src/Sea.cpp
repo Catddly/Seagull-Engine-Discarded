@@ -4,11 +4,25 @@
 #include "Core/EntryPoint.h"
 // ------------------------------------------
 
+class MessageLayer : public SG::Layer
+{
+public:
+	MessageLayer() : SG::Layer("MessageLayer") {}
+
+	void OnUpdate() override
+	{
+		SG_INFO("Message layer!");
+	}
+private:
+};
+
 class Sea : public SG::Application
 {
 public:
-	Sea() 
-		: SG::Application("Sea") {}
+	Sea() : SG::Application("Sea") 
+	{
+		PushLayer(new MessageLayer());
+	}
 	~Sea() = default;
 	
 private:

@@ -66,6 +66,6 @@ namespace SG
 		AppRenderEvent() {}
 
 		EVENT_TYPE(AppRender)
-			EVENT_CATEGORY(EventCategoryApplication)
+		EVENT_CATEGORY(EventCategoryApplication)
 	};
 }

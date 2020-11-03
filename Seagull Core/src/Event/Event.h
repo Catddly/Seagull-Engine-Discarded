@@ -25,9 +25,9 @@ namespace SG
 		EventCategoryMouseButton = 1 << 4
 	};
 
-#define EVENT_TYPE(type) static EventType GetStaticType() const { return EventType::##type; } \
-	virtual EventType GetEventType() const override { return GetStaticType(); } \
-	virtual const char* GetName() const override { return #type; }
+#define EVENT_TYPE(type) static EventType GetStaticType() { return EventType::##type; } \
+						 virtual EventType GetEventType() const override { return GetStaticType(); } \
+						 virtual const char* GetName() const override { return #type; }
 
 #define EVENT_CATEGORY(category) virtual int GetCategoryFlag() const override { (int)category; }
 
@@ -53,7 +53,7 @@ namespace SG
 	{
 	public:
 		template <typename T>
-		using EventFunc = bool(*)(T);
+		using EventFunc = bool(*)(T&);
 
 		EventDispatcher(Event& e)
 			:m_Event(e) {}

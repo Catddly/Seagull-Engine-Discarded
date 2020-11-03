@@ -22,8 +22,6 @@ namespace SG
 		// LogManager initialized
 		SG::LogManager::Init();
 
-		//AllocConsole();
-
 		WindowProps m_MainWndProps = WindowProps(wndInstance, show);
 		m_MainWindow = Window::Create(m_MainWndProps);
 		
@@ -49,9 +47,12 @@ namespace SG
 			else
 			{
 				// main game loop
+				for (auto layer : m_LayerStack)
+				{
+					layer->OnUpdate();
+				}
+
 				m_MainWindow->OnUpdate();
-				SG_CORE_TRACE("Welcome to Seagull Engine! Name: {0}", s_AppName);
-				Sleep(1000);
 			}
 
 		}
@@ -61,7 +62,16 @@ namespace SG
 
 	void Application::Shutdown()
 	{
-		//FreeConsole();
+	}
+
+	void Application::PushLayer(Layer* layer) noexcept
+	{
+		m_LayerStack.PushLayer(layer);
+	}
+
+	void Application::PushOverlay(Layer* layer) noexcept
+	{
+		m_LayerStack.PushOverlay(layer);
 	}
 
 }
