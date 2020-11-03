@@ -2,7 +2,8 @@
 #include "Application.h"
 
 #include "LogManager.h"
-#include "utilis/Timestep.h"
+#include "Utilis/Timestep.h"
+#include "Event/Event.h"
 
 namespace SG
 {
@@ -72,6 +73,11 @@ namespace SG
 	void Application::PushOverlay(Layer* layer) noexcept
 	{
 		m_LayerStack.PushOverlay(layer);
+	}
+
+	void Application::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
 	}
 
 }

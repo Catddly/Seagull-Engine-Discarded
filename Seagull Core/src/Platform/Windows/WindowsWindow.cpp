@@ -9,7 +9,10 @@ namespace SG
 		switch (msg)
 		{
 		case WM_LBUTTONDOWN:
-			MessageBox(0, L"你好，小伙子", L"Hello", MB_OK); return 0;
+		{
+			MessageBox(0, L"你好，小伙子", L"Hello", MB_OK);
+			return 0;
+		}
 		case WM_KEYDOWN:
 			if (wParam == VK_ESCAPE)
 				DestroyWindow(hWnd);

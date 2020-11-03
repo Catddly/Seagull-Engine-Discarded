@@ -3,6 +3,8 @@
 #include "Core.h"
 #include <windows.h>
 
+#include "Event/Event.h"
+
 namespace SG
 {
 	struct WindowProps
@@ -22,11 +24,15 @@ namespace SG
 	class Window
 	{
 	public:
+		using EventCallbackFn = void(*)(Event&);
+
 		Window() = default;
 		virtual ~Window() = default;
 
 		virtual bool OnCreate() = 0;
 		virtual void OnUpdate() = 0;
+
+		virtual void SetEventCallbackFn(EventCallbackFn func) = 0;
 
 		virtual inline uint32_t GetWidth() const = 0;
 		virtual inline uint32_t GetHeight() const = 0;

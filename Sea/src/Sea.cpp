@@ -12,6 +12,7 @@ public:
 	void OnUpdate() override
 	{
 		SG_INFO("Message layer!");
+		Sleep(1000);
 	}
 private:
 };
@@ -24,7 +25,6 @@ public:
 		PushLayer(new MessageLayer());
 	}
 	~Sea() = default;
-	
 private:
 };
 

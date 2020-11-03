@@ -1,7 +1,7 @@
 #include "LogManager.h"
 #include "Application.h"
 
-#include "Platform/WindowsWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 extern inline SG::Application* CreateApp();
 

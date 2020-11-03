@@ -1,7 +1,7 @@
 #include "sgpch.h"
 #include "Window.h"
 
-#include "Platform/WindowsWindow.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 namespace SG
 {

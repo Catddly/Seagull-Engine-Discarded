@@ -27,8 +27,10 @@ namespace SG
 		void PushLayer(Layer* layer) noexcept;
 		void PushOverlay(Layer* layer) noexcept;
 
-		virtual void OnEvent(Event& e) {}
-		virtual void OnUpdate(Timestep ts) {}
+		void OnEvent(Event& e);
+
+		static Application& Get() { return *s_Instance; }
+		Window& GetWindow() { return *m_MainWindow; }
 
 		Application operator=(const Application& app) = delete;
 	private:
