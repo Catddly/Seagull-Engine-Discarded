@@ -10,12 +10,19 @@ namespace SG
 	std::string Application::s_AppName = "";
 	Application* Application::s_Instance = nullptr;
 	bool Application::s_IsRunning = true;
+	bool Application::s_IsInitialized = false;
 
 	Application::Application(const std::string& name)
 	{
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;
 		s_AppName = name;
+	}
+
+	Application::~Application()
+	{
+		for (auto layer : m_LayerStack)
+			layer->OnDettach();
 	}
 
 	bool Application::Init(const HINSTANCE& wndInstance, int show)
@@ -29,6 +36,11 @@ namespace SG
 		if (!m_MainWindow->OnCreate())
 			return false;
 
+		if (!s_IsInitialized)
+			for (auto layer : m_LayerStack)
+				layer->OnAttach();
+
+		s_IsInitialized = true;
 		return true;
 	}
 
@@ -55,7 +67,6 @@ namespace SG
 
 				m_MainWindow->OnUpdate();
 			}
-
 		}
 
 		return (int)msg.wParam;
@@ -68,11 +79,15 @@ namespace SG
 	void Application::PushLayer(Layer* layer) noexcept
 	{
 		m_LayerStack.PushLayer(layer);
+		if (s_IsInitialized)
+			layer->OnAttach();
 	}
 
 	void Application::PushOverlay(Layer* layer) noexcept
 	{
 		m_LayerStack.PushOverlay(layer);
+		if (s_IsInitialized)
+			layer->OnAttach();
 	}
 
 	void Application::OnEvent(Event& e)

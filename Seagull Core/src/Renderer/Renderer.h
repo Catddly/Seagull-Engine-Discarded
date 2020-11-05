@@ -9,6 +9,7 @@ namespace SG
 		Renderer() = default;
 		virtual ~Renderer() = default;
 
+		static void Init();
 	private:
 	};
 

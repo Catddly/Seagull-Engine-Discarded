@@ -9,10 +9,14 @@ class MessageLayer : public SG::Layer
 public:
 	MessageLayer() : SG::Layer("MessageLayer") {}
 
+	void OnAttach() override
+	{
+		SG::Renderer::Init();
+	}
+
 	void OnUpdate() override
 	{
-		SG_INFO("Message layer!");
-		Sleep(1000);
+		SG::RenderCommand::Clear();
 	}
 private:
 };

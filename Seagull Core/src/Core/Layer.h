@@ -16,8 +16,8 @@ namespace SG
 
 		inline const std::string& GetName() const { return m_Name; }
 
-		virtual void OnAttach() noexcept {}
-		virtual void OnDettach() noexcept {}
+		virtual void OnAttach() {}
+		virtual void OnDettach() {}
 
 		virtual void OnUpdate() {}
 		virtual void OnEvent(Event& e) {}
