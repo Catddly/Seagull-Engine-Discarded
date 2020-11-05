@@ -24,7 +24,7 @@ private:
 class Sea : public SG::Application
 {
 public:
-	Sea() : SG::Application("Sea") 
+	Sea() : SG::Application(L"Sea") 
 	{
 		PushLayer(new MessageLayer());
 	}

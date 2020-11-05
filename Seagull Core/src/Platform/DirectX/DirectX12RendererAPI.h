@@ -7,6 +7,9 @@
 #include <dxgi1_6.h>
 
 #include "Core/Core.h"
+#include "DirectX12Context.h"
+#include "DirectX12RenderQueue.h"
+#include "DirectX12CommandList.h"
 
 // Link necessary d3d12 libraries.
 #pragma comment(lib, "d3dcompiler.lib")
@@ -38,10 +41,9 @@ namespace SG
 		void LogAdapterOutputs(IDXGIAdapter* adapter);
 		void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
-		void FlushCommandQueue();
 		void OnResize();
 		void CreateRtvAndDsvDescriptorsHeap();
-		//void CreateRtv();
+		void CreateRtv();
 		//void CreateDsv();
 	private:
 #if (defined(DEBUG) | defined(_DEBUG)) & defined(SG_DEBUG)
@@ -50,13 +52,6 @@ namespace SG
 		ComPtr<ID3D12Device1> m_D3dDevice;
 		ComPtr<IDXGIFactory7> m_DxgiFactory;
 		ComPtr<IDXGISwapChain> m_SwapChain;
-
-		ComPtr<ID3D12Fence1> m_Fence;
-		UINT64 m_CurrFence = 0;
-
-		ComPtr<ID3D12CommandQueue> m_CommandQueue;
-		ComPtr<ID3D12CommandAllocator> m_CommandAllocator;
-		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 
 		static int m_CurrBackBuffer;
 		ComPtr<ID3D12Resource> m_SwapChainBuffer[m_SwapChainBufferCount];
@@ -68,11 +63,9 @@ namespace SG
 		D3D12_VIEWPORT m_ScreenViewport;
 		D3D12_RECT m_ScissorRect;
 
-		UINT m_RtvDescriptorSize = 0, m_DsvDescriptorSize = 0, m_CbvDescriptorSize = 0;  // each descriptor size of the device
-		bool m_4xMSAAState = false;
-		UINT m_4xMSAAQuality = 0;                                                // quality level of 4X MSAA
-		DXGI_FORMAT m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		Ref<DirectX12Context> m_Context;
+		Ref<DirectX12RenderQueue> m_RenderQueue;
+		Ref<DirectX12CommandList> m_CommandList;
 	};
 
 }

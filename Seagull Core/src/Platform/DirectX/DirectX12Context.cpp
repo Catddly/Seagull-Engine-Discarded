@@ -5,7 +5,7 @@
 
 namespace SG
 {
-	bool DirectX12Context::m_4xMSAAState = true;
+	bool DirectX12Context::m_4xMSAAState = false;
 	UINT DirectX12Context::m_4xMSAAQuality = 0;
 	DXGI_FORMAT DirectX12Context::m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT DirectX12Context::m_DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -15,10 +15,10 @@ namespace SG
 
 	DirectX12Context::DirectX12Context(ComPtr<ID3D12Device> device)
 		:m_D3dDevice(device)
-	{
-		// Create Fence
-		ThrowIfFailed(m_D3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+	{}
 
+	void DirectX12Context::Init()
+	{
 		// Get the descriptor size of the device
 		m_RtvDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		m_DsvDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -36,11 +36,6 @@ namespace SG
 
 		m_4xMSAAQuality = sampleQualityLevels.NumQualityLevels;
 		SG_CORE_ASSERT(m_4xMSAAQuality > 0, "Unexcepted MSAA quality level!");
-	}
-
-	void DirectX12Context::SwapBuffers()
-	{
-
 	}
 
 }

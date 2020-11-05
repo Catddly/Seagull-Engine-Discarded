@@ -7,12 +7,12 @@
 
 namespace SG
 {
-	std::string Application::s_AppName = "";
+	std::wstring Application::s_AppName = L"";
 	Application* Application::s_Instance = nullptr;
 	bool Application::s_IsRunning = true;
 	bool Application::s_IsInitialized = false;
 
-	Application::Application(const std::string& name)
+	Application::Application(const std::wstring& name)
 	{
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;

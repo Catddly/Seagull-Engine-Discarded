@@ -64,7 +64,7 @@ namespace SG
 		// Create a window
 		m_MainWnd = CreateWindow(
 			L"BasicWndClass",
-			m_WndProps.w_Title,
+			m_WndProps.Title.c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, // x
 			CW_USEDEFAULT, // y

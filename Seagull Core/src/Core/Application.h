@@ -16,7 +16,7 @@ namespace SG
 	class Application
 	{
 	public:
-		Application(const std::string& name = "App");
+		Application(const std::wstring& name = L"App");
 		Application(const Application&) = delete;
 		Application operator=(const Application& app) = delete;
 		virtual ~Application();
@@ -33,7 +33,7 @@ namespace SG
 		static Application& Get() { return *s_Instance; }
 		Window& GetWindow() { return *m_MainWindow; }
 	private:
-		static std::string s_AppName;
+		static std::wstring s_AppName;
 		static Application* s_Instance;
 		static bool s_IsRunning;
 		static bool s_IsInitialized;

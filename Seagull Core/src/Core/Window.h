@@ -4,21 +4,21 @@
 #include <windows.h>
 
 #include "Event/Event.h"
+#include "Platform/DirectX/DirectXHelper.h"
 
 namespace SG
 {
 	struct WindowProps
 	{
 		uint32_t Width, Height;
-		const wchar_t* w_Title;
-		std::string s_Title;
+		std::wstring Title;
 		HINSTANCE WinInstance;
 		int Show;
-		WindowProps(const HINSTANCE& wndInstace, int show, const wchar_t* t = L"Seagull Engine", uint32_t w = 1920, uint32_t h = 1080)
-			:w_Title(t), Width(w), Height(h), WinInstance(wndInstace), Show(show), s_Title("NULL") {}
+		WindowProps(const HINSTANCE& wndInstace, int show, const std::wstring& t = L"Seagull Engine", uint32_t w = 1920, uint32_t h = 1080)
+			:Width(w), Height(h), WinInstance(wndInstace), Show(show), Title(t) {}
 
 		WindowProps(const std::string& t = "Seagull Engine", uint32_t w = 1920, uint32_t h = 1080)
-			:s_Title(t), Width(w), Height(h), Show(0), WinInstance(nullptr), w_Title(L"NULL") {}
+			:Width(w), Height(h), Show(0), WinInstance(nullptr), Title(AnsiToWString(t)) {}
 	};
 
 	class Window
