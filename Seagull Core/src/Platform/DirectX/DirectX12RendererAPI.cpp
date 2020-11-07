@@ -9,8 +9,6 @@
 
 namespace SG
 {
-	int DirectX12RendererAPI::m_CurrBackBuffer = 0;
-
 	DirectX12RendererAPI::DirectX12RendererAPI()
 	{
 		// Enable debug layer
@@ -57,44 +55,46 @@ namespace SG
 		// when we first use command list, we should reset it. Before we reset it, we should close it
 		m_CommandList->Close();
 
-		//m_SwapChain = CreateRef<DirectX12SwapChain>(&Application::Get().GetWindow(), m_DxgiFactory, m_RenderCommand);
-		// Create swap chain
-		m_SwapChain.Reset();
+		m_SwapChain = CreateRef<DirectX12SwapChain>(m_DxgiFactory);
+		m_SwapChain->Init(&Application::Get().GetWindow(), m_Context, m_RenderQueue);
+		//// Create swap chain
+		//m_SwapChain.Reset();
 
-		DXGI_SWAP_CHAIN_DESC swapChainDesc;
-		swapChainDesc.BufferDesc.Width = (UINT)Application::Get().GetWindow().GetWidth();
-		swapChainDesc.BufferDesc.Height = (UINT)Application::Get().GetWindow().GetHeight();
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-		swapChainDesc.BufferDesc.Format = m_Context->GetBackBufferFormat();
-		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		swapChainDesc.SampleDesc.Count = m_Context->Get4xMSAAState() ? 4 : 1;
-		swapChainDesc.SampleDesc.Quality = m_Context->Get4xMSAAState() ? (m_Context->Get4xMSAAQualityCount() - 1) : 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = m_SwapChainBufferCount;
-		swapChainDesc.OutputWindow = static_cast<HWND>(Application::Get().GetWindow().GetNativeWindow());
-		swapChainDesc.Windowed = true;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+		//DXGI_SWAP_CHAIN_DESC swapChainDesc;
+		//swapChainDesc.BufferDesc.Width = (UINT)Application::Get().GetWindow().GetWidth();
+		//swapChainDesc.BufferDesc.Height = (UINT)Application::Get().GetWindow().GetHeight();
+		//swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
+		//swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
+		//swapChainDesc.BufferDesc.Format = m_Context->GetBackBufferFormat();
+		//swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+		//swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+		//swapChainDesc.SampleDesc.Count = m_Context->Get4xMSAAState() ? 4 : 1;
+		//swapChainDesc.SampleDesc.Quality = m_Context->Get4xMSAAState() ? (m_Context->Get4xMSAAQualityCount() - 1) : 0;
+		//swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		//swapChainDesc.BufferCount = m_SwapChainBufferCount;
+		//swapChainDesc.OutputWindow = static_cast<HWND>(Application::Get().GetWindow().GetNativeWindow());
+		//swapChainDesc.Windowed = true;
+		//swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		//swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
-		ThrowIfFailed(m_DxgiFactory->CreateSwapChain(m_RenderQueue->GetCommandQueueNative(),
-			&swapChainDesc,
-			m_SwapChain.GetAddressOf()));
+		//ThrowIfFailed(m_DxgiFactory->CreateSwapChain(m_RenderQueue->GetCommandQueueNative(),
+		//	&swapChainDesc,
+		//	m_SwapChain.GetAddressOf()));
 
 		CreateRtvAndDsvDescriptorsHeap();
 		OnResize();
-		LogAdapters();
+		//LogAdapters();
 	}
 
 	void DirectX12RendererAPI::CreateRtvAndDsvDescriptorsHeap()
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC rtvDesc;
-		rtvDesc.NumDescriptors = m_SwapChainBufferCount;
-		rtvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		rtvDesc.NodeMask = 0;
-		ThrowIfFailed(m_D3dDevice->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(m_RtvHeap.GetAddressOf())));
+		m_SwapChain->CreateRtvDescHeap(m_D3dDevice);
+		//D3D12_DESCRIPTOR_HEAP_DESC rtvDesc;
+		//rtvDesc.NumDescriptors = m_SwapChainBufferCount;
+		//rtvDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		//rtvDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		//rtvDesc.NodeMask = 0;
+		//ThrowIfFailed(m_D3dDevice->CreateDescriptorHeap(&rtvDesc, IID_PPV_ARGS(m_RtvHeap.GetAddressOf())));
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvDesc;
 		dsvDesc.NumDescriptors = 1;
@@ -104,47 +104,41 @@ namespace SG
 		ThrowIfFailed(m_D3dDevice->CreateDescriptorHeap(&dsvDesc, IID_PPV_ARGS(m_DsvHeap.GetAddressOf())));
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12RendererAPI::GetCurrBackBufferView() const
-	{
-		return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
-			m_CurrBackBuffer,
-			m_Context->GetRtvDescriptorSize());
-	}
+	//D3D12_CPU_DESCRIPTOR_HANDLE DirectX12RendererAPI::GetCurrBackBufferView() const
+	//{
+	//	return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_RtvHeap->GetCPUDescriptorHandleForHeapStart(),
+	//		m_CurrBackBuffer,
+	//		m_Context->GetRtvDescriptorSize());
+	//}
 
 	D3D12_CPU_DESCRIPTOR_HANDLE DirectX12RendererAPI::GetDepthStencilView() const
 	{
 		return m_DsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
-	void DirectX12RendererAPI::CreateRtv()
-	{
-		// for each buffer, create a rtv
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_RtvHeap->GetCPUDescriptorHandleForHeapStart());
-		for (int i = 0; i < m_SwapChainBufferCount; i++)
-		{
-			ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapChainBuffer[i])));
-			m_D3dDevice->CreateRenderTargetView(m_SwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-			// Offset to the next buffer
-			rtvHeapHandle.Offset(1, DirectX12Context::GetRtvDescriptorSize());
-		}
-	}
-
-	//void DirectX12RendererAPI::CreateDsv()
+	//void DirectX12RendererAPI::CreateRtv()
 	//{
-	//	// create dsv
-	//	D3D12_RESOURCE_DESC dsvDesc;
-	//	dsvDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	//	dsvDesc.Alignment = 0;
-	//	dsvDesc.Width = Application::Get().GetWindow().GetWidth();
-	//	dsvDesc.Height = Application::Get().GetWindow().GetHeight();
-	//	dsvDesc.DepthOrArraySize = 1;
-	//	dsvDesc.MipLevels = 1;
-	//	dsvDesc.Format = DirectX12Context::GetDepthStencilFormat();
-	//	dsvDesc.SampleDesc.Count = DirectX12Context::Get4xMSAAState() ? 4 : 1;
-	//	dsvDesc.SampleDesc.Quality = DirectX12Context::Get4xMSAAState() ? (DirectX12Context::Get4xMSAAQualityCount() - 1) : 0;
-	//	dsvDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	//	dsvDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	//	// for each buffer, create a rtv
+	//	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(m_RtvHeap->GetCPUDescriptorHandleForHeapStart());
+	//	for (int i = 0; i < m_SwapChainBufferCount; i++)
+	//	{
+	//		ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapChainBuffer[i])));
+	//		m_D3dDevice->CreateRenderTargetView(m_SwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+	//		// Offset to the next buffer
+	//		rtvHeapHandle.Offset(1, DirectX12Context::GetRtvDescriptorSize());
+	//	}
 	//}
+
+	void DirectX12RendererAPI::CreateDsv()
+	{
+		// Create descriptor to mip level 0 of entire resource using the format of the resource.
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsvDesc.Format = m_Context->GetDepthStencilFormat();
+		dsvDesc.Texture2D.MipSlice = 0;
+		m_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &dsvDesc, GetDepthStencilView());
+	}
 
 	void DirectX12RendererAPI::Clear()
 	{
@@ -157,7 +151,7 @@ namespace SG
 		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
 
 		// Indicate a state transition on the resource usage.
-		m_CommandList->ResourceBarrier(1, GetCurrBackBuffer(),
+		m_CommandList->ResourceBarrier(1, m_SwapChain->GetCurrBackBuffer(),
 			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
@@ -165,15 +159,15 @@ namespace SG
 		m_CommandList->SetScissorRect(1, &m_ScissorRect);
 
 		// Clear the back buffer and depth buffer.
-		m_CommandList->ClearRtv(GetCurrBackBufferView(), DirectX::Colors::Beige, 0, nullptr);
+		m_CommandList->ClearRtv(m_SwapChain->GetCurrBackBufferView(), DirectX::Colors::Beige, 0, nullptr);
 		m_CommandList->ClearDsv(GetDepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f,
 			0, 0, nullptr);
 
 		// Specify the buffers we are going to render to.
-		m_CommandList->SetRenderTarget(1, &GetCurrBackBufferView(), true, &GetDepthStencilView());
+		m_CommandList->SetRenderTarget(1, &m_SwapChain->GetCurrBackBufferView(), true, &GetDepthStencilView());
 
 		// Indicate a state transition on the resource usage.
-		m_CommandList->ResourceBarrier(1, GetCurrBackBuffer(),
+		m_CommandList->ResourceBarrier(1, m_SwapChain->GetCurrBackBuffer(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 		// Done recording commands.
@@ -183,8 +177,9 @@ namespace SG
 		m_RenderQueue->ExecuteCommandLists(m_CommandList->GetCommandListNative());
 
 		// swap the back and front buffers
-		ThrowIfFailed(m_SwapChain->Present(0, 0));
-		m_CurrBackBuffer = (m_CurrBackBuffer + 1) % m_SwapChainBufferCount;
+		m_SwapChain->SwapBuffer();
+		//ThrowIfFailed(m_SwapChain->Present(0, 0));
+		//m_CurrBackBuffer = (m_CurrBackBuffer + 1) % m_SwapChainBufferCount;
 
 		// Wait until frame commands are complete.  This waiting is inefficient and is
 		// done for simplicity.  Later we will show how to organize our rendering code
@@ -192,10 +187,10 @@ namespace SG
 		m_RenderQueue->FlushCommandQueue();
 	}
 
-	ID3D12Resource* DirectX12RendererAPI::GetCurrBackBuffer() const
-	{
-		return m_SwapChainBuffer[m_CurrBackBuffer].Get();
-	}
+	//ID3D12Resource* DirectX12RendererAPI::GetCurrBackBuffer() const
+	//{
+	//	return m_SwapChainBuffer[m_CurrBackBuffer].Get();
+	//}
 
 	void DirectX12RendererAPI::OnResize()
 	{
@@ -212,21 +207,13 @@ namespace SG
 		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
 
 		// Release the previous resources we will be recreating.
-		for (int i = 0; i < m_SwapChainBufferCount; ++i)
-			m_SwapChainBuffer[i].Reset();
+		m_SwapChain->ResetBuffers();
+		//for (int i = 0; i < m_SwapChainBufferCount; ++i)
+		//	m_SwapChainBuffer[i].Reset();
 		m_DepthStencilBuffer.Reset();
 
-		// Resize the swap chain.
-		ThrowIfFailed(m_SwapChain->ResizeBuffers(
-			m_SwapChainBufferCount,
-			width,
-			height,
-			m_Context->GetBackBufferFormat(),
-			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
-
-		m_CurrBackBuffer = 0;
-
-		CreateRtv();
+		m_SwapChain->ResizeBuffers();
+		m_SwapChain->CreateRtv();
 
 		// Create the depth/stencil buffer and view.
 		D3D12_RESOURCE_DESC depthStencilDesc;
@@ -236,7 +223,6 @@ namespace SG
 		depthStencilDesc.Height = height;
 		depthStencilDesc.DepthOrArraySize = 1;
 		depthStencilDesc.MipLevels = 1;
-
 		// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
 		// the depth buffer.  Therefore, because we need to create two views to the same resource:
 		//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
@@ -261,13 +247,7 @@ namespace SG
 			&optClear,
 			IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
 
-		// Create descriptor to mip level 0 of entire resource using the format of the resource.
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Format = m_Context->GetDepthStencilFormat();
-		dsvDesc.Texture2D.MipSlice = 0;
-		m_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &dsvDesc, GetDepthStencilView());
+		CreateDsv();
 
 		// Transition the resource from its initial state to be used as a depth buffer.
 		m_CommandList->ResourceBarrier(1, m_DepthStencilBuffer.Get(),
