@@ -13,16 +13,12 @@ namespace SG
 	UINT DirectX12Context::m_DsvDescriptorSize = 0;
 	UINT DirectX12Context::m_CbvDescriptorSize = 0;
 
-	DirectX12Context::DirectX12Context(ComPtr<ID3D12Device> device)
-		:m_D3dDevice(device)
-	{}
-
-	void DirectX12Context::Init()
+	void DirectX12Context::Init(ID3D12Device1* device)
 	{
 		// Get the descriptor size of the device
-		m_RtvDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		m_DsvDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		m_CbvDescriptorSize = m_D3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_RtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		m_DsvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+		m_CbvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		// Check the support of 4X MSAA
 		D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS sampleQualityLevels;
@@ -30,12 +26,31 @@ namespace SG
 		sampleQualityLevels.SampleCount = 4;
 		sampleQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 		sampleQualityLevels.NumQualityLevels = 0;
-		ThrowIfFailed(m_D3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
+		ThrowIfFailed(device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
 			&sampleQualityLevels,
 			sizeof(sampleQualityLevels)));
 
 		m_4xMSAAQuality = sampleQualityLevels.NumQualityLevels;
 		SG_CORE_ASSERT(m_4xMSAAQuality > 0, "Unexcepted MSAA quality level!");
+	}
+
+	uint32_t DirectX12Context::GetDescHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type)
+	{
+		switch (type)
+		{
+			case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+				return m_CbvDescriptorSize; break;
+			case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+				SG_CORE_ASSERT("Unknown D3D12_DESCRIPTOR_HEAP_TYPE!"); break;
+			case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+				return m_RtvDescriptorSize; break;
+			case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
+				return m_DsvDescriptorSize; break;
+			case D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES:
+				SG_CORE_ASSERT("Unknown D3D12_DESCRIPTOR_HEAP_TYPE!"); break;
+		}
+
+		SG_CORE_ASSERT("Unknown D3D12_DESCRIPTOR_HEAP_TYPE!");
 	}
 
 }

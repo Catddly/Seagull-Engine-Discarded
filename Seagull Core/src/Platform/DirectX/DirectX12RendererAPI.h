@@ -10,6 +10,7 @@
 #include "DirectX12Context.h"
 #include "DirectX12RenderQueue.h"
 #include "DirectX12CommandList.h"
+#include "DirectX12DescriptorHeap.h"
 
 // Link necessary d3d12 libraries.
 #pragma comment(lib, "d3dcompiler.lib")
@@ -32,8 +33,8 @@ namespace SG
 		virtual void Init() override;
 		virtual void Clear() override;
 
-		D3D12_CPU_DESCRIPTOR_HANDLE GetCurrBackBufferView() const;
-		D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
+		//D3D12_CPU_DESCRIPTOR_HANDLE GetCurrBackBufferView() const;
+		//D3D12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const;
 		ID3D12Resource* GetCurrBackBuffer() const;
 	private:
 		void LogAdapters();
@@ -57,13 +58,15 @@ namespace SG
 		ComPtr<ID3D12Resource> m_SwapChainBuffer[2];
 		ComPtr<ID3D12Resource> m_DepthStencilBuffer;
 
-		ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
-		ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
+		Ref<DirectX12DescriptorHeap> m_RtvHeap;
+		Ref<DirectX12DescriptorHeap> m_DsvHeap;
+		//ComPtr<ID3D12DescriptorHeap> m_RtvHeap;
+		//ComPtr<ID3D12DescriptorHeap> m_DsvHeap;
 
 		D3D12_VIEWPORT m_ScreenViewport;
 		D3D12_RECT m_ScissorRect;
 
-		Ref<DirectX12Context> m_Context;
+		//Ref<DirectX12Context> m_Context;
 		Ref<DirectX12RenderQueue> m_RenderQueue;
 		Ref<DirectX12CommandList> m_CommandList;
 		//Ref<DirectX12SwapChain> m_SwapChain;

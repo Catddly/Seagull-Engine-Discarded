@@ -12,12 +12,10 @@ namespace SG
 	class DirectX12CommandList
 	{
 	public:
-		DirectX12CommandList(ComPtr<ID3D12Device1> device);
+		DirectX12CommandList(ID3D12Device1* device, const Ref<DirectX12RenderQueue>& renderQueue);
 		DirectX12CommandList(const DirectX12CommandList&) = delete;
 		DirectX12CommandList operator=(const DirectX12CommandList&) = delete;
 		~DirectX12CommandList() = default;
-
-		void Init(const Ref<DirectX12RenderQueue>& rq);
 
 		void ResourceBarrier(UINT numBarriers, ID3D12Resource* resource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter) const noexcept;
 
@@ -36,8 +34,6 @@ namespace SG
 
 		ID3D12GraphicsCommandList* GetCommandListNative() { return m_CommandList.Get(); }
 	private:
-		ComPtr<ID3D12Device1> m_D3dDevice;
-
 		ComPtr<ID3D12GraphicsCommandList> m_CommandList;
 	};
 

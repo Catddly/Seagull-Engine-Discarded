@@ -9,7 +9,7 @@ namespace SG
 		GraphicContext() = default;
 		virtual ~GraphicContext() = default;
 
-		virtual void Init() = 0;
+		//virtual void Init() = 0;
 		//virtual void SwapBuffers() = 0;
 	};
 

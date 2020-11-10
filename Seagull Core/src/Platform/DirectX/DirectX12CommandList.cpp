@@ -7,13 +7,9 @@
 
 namespace SG
 {
-	DirectX12CommandList::DirectX12CommandList(ComPtr<ID3D12Device1> device)
-		:m_D3dDevice(device)
-	{}
-
-	void DirectX12CommandList::Init(const Ref<DirectX12RenderQueue>& rq)
+	DirectX12CommandList::DirectX12CommandList(ID3D12Device1* device, const Ref<DirectX12RenderQueue>& renderQueue)
 	{
-		ThrowIfFailed(m_D3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, rq->GetCommandAllocatorNative(),
+		ThrowIfFailed(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, renderQueue->GetCommandAllocatorNative(),
 			nullptr /* PSO */, IID_PPV_ARGS(m_CommandList.GetAddressOf())));
 	}
 

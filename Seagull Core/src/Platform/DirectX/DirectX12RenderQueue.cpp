@@ -6,17 +6,16 @@
 namespace SG
 {
 
-	DirectX12RenderQueue::DirectX12RenderQueue(ComPtr<ID3D12Device1> device, D3D12_COMMAND_QUEUE_DESC& cqDesc)
-		:m_D3dDevice(device), commandQueueDesc(cqDesc)
-	{}
-
-	void DirectX12RenderQueue::Init()
+	DirectX12RenderQueue::DirectX12RenderQueue(ID3D12Device1* device)
 	{
-		// Create Fence
-		ThrowIfFailed(m_D3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+		m_CommandQueueDesc = { };
+		m_CommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+		m_CommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-		ThrowIfFailed(m_D3dDevice->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_CommandQueue)));
-		ThrowIfFailed(m_D3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
+		ThrowIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence)));
+
+		ThrowIfFailed(device->CreateCommandQueue(&m_CommandQueueDesc, IID_PPV_ARGS(&m_CommandQueue)));
+		ThrowIfFailed(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
 			IID_PPV_ARGS(m_CommandAllocator.GetAddressOf())));
 	}
 
