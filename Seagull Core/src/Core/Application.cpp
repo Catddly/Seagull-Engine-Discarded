@@ -7,10 +7,13 @@
 
 namespace SG
 {
+
 	std::wstring Application::s_AppName = L"";
 	Application* Application::s_Instance = nullptr;
 	bool Application::s_IsRunning = true;
+	bool Application::s_IsMinimized = false;
 	bool Application::s_IsInitialized = false;
+	bool Application::s_EnableEventLog = false;
 
 	Application::Application(const std::wstring& name)
 	{
@@ -32,7 +35,8 @@ namespace SG
 
 		WindowProps m_MainWndProps = WindowProps(wndInstance, show);
 		m_MainWindow = Window::Create(m_MainWndProps);
-		
+		m_MainWindow->SetEventCallbackFn(SG_BIND_EVENT_FUNC(Application::OnEvent));
+			
 		if (!m_MainWindow->OnCreate())
 			return false;
 
@@ -49,7 +53,7 @@ namespace SG
 		MSG msg = {0};
 
 		// until receive WM_QUIT, if will keep looping
-		while (msg.message != WM_QUIT)
+		while (s_IsRunning)
 		{
 			if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
 			{
@@ -60,12 +64,15 @@ namespace SG
 			else
 			{
 				// main game loop
-				for (auto layer : m_LayerStack)
+				if (!s_IsMinimized)
 				{
-					layer->OnUpdate();
-				}
+					for (auto layer : m_LayerStack)
+					{
+						layer->OnUpdate();
+					}
 
-				m_MainWindow->OnUpdate();
+					m_MainWindow->OnUpdate();
+				}
 			}
 		}
 
@@ -93,6 +100,58 @@ namespace SG
 	void Application::OnEvent(Event& e)
 	{
 		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<MouseButtonPressedEvent>(SG_BIND_EVENT_FUNC(Application::OnMousePressed));
+		dispatcher.Dispatch<KeyPressedEvent>(SG_BIND_EVENT_FUNC(Application::OnKeyPressed));
+		dispatcher.Dispatch<MouseMovedEvent>(SG_BIND_EVENT_FUNC(Application::OnMouseMoved));
+		dispatcher.Dispatch<WindowCloseEvent>(SG_BIND_EVENT_FUNC(Application::OnWindowClose));
+		dispatcher.Dispatch<WindowResizeEvent>(SG_BIND_EVENT_FUNC(Application::OnWindowResize));
+
+		if (s_EnableEventLog)
+			SG_CORE_TRACE("{0}", e);
+
+		for (auto end = m_LayerStack.end(); end != m_LayerStack.begin(); )
+		{
+			if (e.IsHandled())
+				break;
+			(*--end)->OnEvent(e);
+		}
+	}
+
+	bool Application::OnMousePressed(MouseButtonPressedEvent& e)
+	{
+		return false;
+	}
+
+	bool Application::OnKeyPressed(KeyPressedEvent& e)
+	{
+		if (e.GetKeycode() == 'M')
+			s_EnableEventLog = !s_EnableEventLog;
+		return false;
+	}
+
+	bool Application::OnMouseMoved(MouseMovedEvent& e)
+	{
+		return false;
+	}
+
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		auto wnd = static_cast<HWND>(e.GetNativeWindowHandle());
+		DestroyWindow(wnd);
+		PostQuitMessage(0);
+		s_IsRunning = false;
+		return false;
+	}
+
+	bool Application::OnWindowResize(WindowResizeEvent& e)
+	{
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
+			s_IsMinimized = true;
+			return false;
+		}
+
+		return false;
 	}
 
 }

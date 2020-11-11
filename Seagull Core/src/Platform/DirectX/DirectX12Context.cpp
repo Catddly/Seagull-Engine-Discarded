@@ -5,6 +5,7 @@
 
 namespace SG
 {
+
 	bool DirectX12Context::m_4xMSAAState = false;
 	UINT DirectX12Context::m_4xMSAAQuality = 0;
 	DXGI_FORMAT DirectX12Context::m_BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -12,6 +13,14 @@ namespace SG
 	UINT DirectX12Context::m_RtvDescriptorSize = 0;
 	UINT DirectX12Context::m_DsvDescriptorSize = 0;
 	UINT DirectX12Context::m_CbvDescriptorSize = 0;
+
+	std::vector<IDXGIAdapter*> DirectX12Context::m_AdaptersList;
+
+	DirectX12Context::~DirectX12Context()
+	{
+		for (size_t i = 0; i < m_AdaptersList.size(); ++i)
+			ReleaseCom(m_AdaptersList[i]);
+	}
 
 	void DirectX12Context::Init(ID3D12Device1* device)
 	{
@@ -51,6 +60,78 @@ namespace SG
 		}
 
 		SG_CORE_ASSERT("Unknown D3D12_DESCRIPTOR_HEAP_TYPE!");
+	}
+
+	void DirectX12Context::LogOutAdaptersToConsole(IDXGIFactory7* factory, bool enableDisplayModeDetail)
+	{
+		EnumAdapters(factory);
+		for (size_t i = 0; i < m_AdaptersList.size(); ++i)
+		{
+			LogAdapters(m_AdaptersList[i], enableDisplayModeDetail);
+		}
+	}
+
+	void DirectX12Context::EnumAdapters(IDXGIFactory7* factory)
+	{
+		UINT i = 0;
+		IDXGIAdapter* adapter = nullptr;
+		while (factory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
+		{
+			DXGI_ADAPTER_DESC desc;
+			adapter->GetDesc(&desc);
+
+			std::wstring text = L"***Adapter: ";
+			text += desc.Description;
+			SG_CORE_INFO(text);
+
+			m_AdaptersList.push_back(adapter);
+			++i;
+		}
+	}
+
+	void DirectX12Context::LogAdapters(IDXGIAdapter* adapter, bool enableDisplayModeDetail)
+	{
+		UINT i = 0;
+		IDXGIOutput* output = nullptr;
+		while (adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND)
+		{
+			DXGI_OUTPUT_DESC desc;
+			output->GetDesc(&desc);
+
+			std::wstring text = L"***Output: ";
+			text += desc.DeviceName;
+			SG_CORE_INFO(text);
+
+			if (enableDisplayModeDetail)
+				LogDisplayModes(output, m_BackBufferFormat);
+
+			ReleaseCom(output);
+			++i;
+		}
+	}
+
+	void DirectX12Context::LogDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
+	{
+		UINT count = 0;
+		UINT flags = 0;
+
+		// Call with nullptr to get list count.
+		output->GetDisplayModeList(format, flags, &count, nullptr);
+
+		std::vector<DXGI_MODE_DESC> modeList(count);
+		output->GetDisplayModeList(format, flags, &count, &modeList[0]);
+
+		for (auto& x : modeList)
+		{
+			UINT n = x.RefreshRate.Numerator;
+			UINT d = x.RefreshRate.Denominator;
+			std::wstring text =
+				L"  Width = " + std::to_wstring(x.Width) +
+				L"  Height = " + std::to_wstring(x.Height) +
+				L"  Refresh = " + std::to_wstring(n) + L"/" + std::to_wstring(d);
+
+			SG_CORE_INFO(text);
+		}
 	}
 
 }

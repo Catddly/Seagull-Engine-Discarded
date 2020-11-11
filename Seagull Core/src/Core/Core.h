@@ -14,6 +14,8 @@
 	#define SG_CORE_ASSERT(x) 
 #endif
 
+#define SG_BIND_EVENT_FUNC(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+
 namespace SG
 {
 	// TODO : replace to own reference system

@@ -18,6 +18,7 @@ namespace SG
 		virtual void OnUpdate() override;
 
 		virtual void SetEventCallbackFn(EventCallbackFn func) override { m_EventCallbackFn = func; }
+		virtual EventCallbackFn GetEventCallbackFn() const override { return m_EventCallbackFn; }
 
 		virtual inline uint32_t GetWidth()  const override { return m_WndProps.Width; }
 		virtual inline uint32_t GetHeight() const override { return m_WndProps.Height; }

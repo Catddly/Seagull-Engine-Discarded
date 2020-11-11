@@ -14,10 +14,10 @@ namespace SG
 
 		std::wstring ToString() const;
 
-		HRESULT ErrorCode = S_OK;
-		std::wstring FunctionName;
-		std::wstring Filename;
-		int LineNumber = -1;
+		HRESULT m_ErrorCode = S_OK;
+		std::wstring m_FunctionName;
+		std::wstring m_Filename;
+		int m_LineNumber = -1;
 	};
 
 	inline std::wstring AnsiToWString(const std::string& str)

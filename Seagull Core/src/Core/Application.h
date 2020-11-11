@@ -7,6 +7,10 @@
 
 #include "LayerStack.h"
 
+#include "Event/MouseEvent.h"
+#include "Event/KeyboardEvent.h"
+#include "Event/ApplicationEvent.h"
+
 #include <string>
 
 namespace SG
@@ -33,10 +37,18 @@ namespace SG
 		static Application& Get() { return *s_Instance; }
 		Window& GetWindow() { return *m_MainWindow; }
 	private:
+		bool OnMousePressed(MouseButtonPressedEvent& e);
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseMoved(MouseMovedEvent& e);
+		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
+	private:
 		static std::wstring s_AppName;
 		static Application* s_Instance;
 		static bool s_IsRunning;
+		static bool s_IsMinimized;
 		static bool s_IsInitialized;
+		static bool s_EnableEventLog;
 
 		Scope<Window> m_MainWindow;
 		WindowProps m_MainWndProps;

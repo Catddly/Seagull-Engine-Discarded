@@ -13,7 +13,8 @@ namespace SG
 			nullptr /* PSO */, IID_PPV_ARGS(m_CommandList.GetAddressOf())));
 	}
 
-	void DirectX12CommandList::ResourceBarrier(UINT numBarriers, ID3D12Resource* resource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter) const noexcept
+	void DirectX12CommandList::ResourceBarrier(UINT numBarriers, ID3D12Resource* resource, 
+		D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter) const noexcept
 	{
 		m_CommandList->ResourceBarrier(numBarriers, 
 			&CD3DX12_RESOURCE_BARRIER::Transition(resource, stateBefore, stateAfter));
@@ -29,17 +30,20 @@ namespace SG
 		m_CommandList->RSSetScissorRects(num, rect);
 	}
 
-	void DirectX12CommandList::ClearRtv(D3D12_CPU_DESCRIPTOR_HANDLE Rtv, const FLOAT* color, UINT numRects, const D3D12_RECT* pRects) const noexcept
+	void DirectX12CommandList::ClearRtv(D3D12_CPU_DESCRIPTOR_HANDLE Rtv, const FLOAT* color, UINT numRects, 
+		const D3D12_RECT* pRects) const noexcept
 	{
 		m_CommandList->ClearRenderTargetView(Rtv, color, numRects, pRects);
 	}
 
-	void DirectX12CommandList::ClearDsv(D3D12_CPU_DESCRIPTOR_HANDLE Dsv, D3D12_CLEAR_FLAGS clearFlags, FLOAT depth, UINT8 stencil, UINT numRects, const D3D12_RECT* pRects) const noexcept
+	void DirectX12CommandList::ClearDsv(D3D12_CPU_DESCRIPTOR_HANDLE Dsv, D3D12_CLEAR_FLAGS clearFlags, FLOAT depth, 
+		UINT8 stencil, UINT numRects, const D3D12_RECT* pRects) const noexcept
 	{
 		m_CommandList->ClearDepthStencilView(Dsv, clearFlags, depth, stencil, numRects, pRects);
 	}
 
-	void DirectX12CommandList::SetRenderTarget(UINT numRenderTargetDesc, const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv, bool RTsSingleHandleToDescriptorRange, const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv) const noexcept
+	void DirectX12CommandList::SetRenderTarget(UINT numRenderTargetDesc, const D3D12_CPU_DESCRIPTOR_HANDLE* Rtv, 
+		bool RTsSingleHandleToDescriptorRange, const D3D12_CPU_DESCRIPTOR_HANDLE* Dsv) const noexcept
 	{
 		m_CommandList->OMSetRenderTargets(numRenderTargetDesc, Rtv, RTsSingleHandleToDescriptorRange, Dsv);
 	}

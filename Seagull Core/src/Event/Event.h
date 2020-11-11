@@ -2,6 +2,7 @@
 
 #include <string>
 #include <sstream>
+#include <functional>
 
 namespace SG
 {
@@ -29,7 +30,7 @@ namespace SG
 						 virtual EventType GetEventType() const override { return GetStaticType(); } \
 						 virtual const char* GetName() const override { return #type; }
 
-#define EVENT_CATEGORY(category) virtual int GetCategoryFlag() const override { (int)category; }
+#define EVENT_CATEGORY(category) virtual int GetCategoryFlag() const override { return (int)category; }
 
 	class Event
 	{
@@ -46,6 +47,8 @@ namespace SG
 		inline bool IsHandled() { return m_IsHandled; }
 
 	protected:
+		friend class EventDispatcher;
+
 		bool m_IsHandled = false;
 	};
 
@@ -53,7 +56,7 @@ namespace SG
 	{
 	public:
 		template <typename T>
-		using EventFunc = bool(*)(T&);
+		using EventFunc = std::function<bool(T&)>;
 
 		EventDispatcher(Event& e)
 			:m_Event(e) {}

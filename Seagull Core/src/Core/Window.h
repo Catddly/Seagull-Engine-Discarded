@@ -24,7 +24,7 @@ namespace SG
 	class Window
 	{
 	public:
-		using EventCallbackFn = void(*)(Event&);
+		using EventCallbackFn = std::function<void(Event&)>;
 
 		Window() = default;
 		virtual ~Window() = default;
@@ -33,6 +33,7 @@ namespace SG
 		virtual void OnUpdate() = 0;
 
 		virtual void SetEventCallbackFn(EventCallbackFn func) = 0;
+		virtual EventCallbackFn GetEventCallbackFn() const = 0;
 
 		virtual inline uint32_t GetWidth() const = 0;
 		virtual inline uint32_t GetHeight() const = 0;

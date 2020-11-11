@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "Event.h"
+#include "Core/Window.h"
 
 namespace SG
 {
@@ -36,10 +37,14 @@ namespace SG
 	class WindowCloseEvent : public Event
 	{
 	public:
-		WindowCloseEvent() {}
+		WindowCloseEvent(Window* wnd) :m_ClosedWindow(wnd) {}
+
+		void* GetNativeWindowHandle() const { return m_ClosedWindow->GetNativeWindow(); }
 
 		EVENT_TYPE(WindowClose)
 		EVENT_CATEGORY(EventCategoryApplication)
+	private:
+		Window* m_ClosedWindow;
 	};
 
 	class AppTickEvent : public Event

@@ -9,7 +9,6 @@
 
 namespace SG
 {
-	UINT DirectX12RendererAPI::m_CurrBackBuffer = 0;
 
 	DirectX12RendererAPI::DirectX12RendererAPI()
 	{
@@ -20,13 +19,7 @@ namespace SG
 			m_DebugController->EnableDebugLayer();
 		}
 #endif
-	}
 
-	DirectX12RendererAPI::~DirectX12RendererAPI()
-	{}
-
-	void DirectX12RendererAPI::Init()
-	{
 		// Create dxgiFactory
 		ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&m_DxgiFactory)));
 
@@ -39,44 +32,26 @@ namespace SG
 			ThrowIfFailed(m_DxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 			ThrowIfFailed(D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_D3dDevice)));
 		}
+	}
 
+	DirectX12RendererAPI::~DirectX12RendererAPI()
+	{}
+
+	void DirectX12RendererAPI::Init()
+	{
 		DirectX12Context::Init(m_D3dDevice.Get());
+		DirectX12Context::LogOutAdaptersToConsole(m_DxgiFactory.Get());
 
 		m_RenderQueue = CreateRef<DirectX12RenderQueue>(m_D3dDevice.Get());
 		// Command list should connect with a command allocator
 		m_CommandList = CreateRef<DirectX12CommandList>(m_D3dDevice.Get(), m_RenderQueue);
-
 		// the command list should be closed at first
 		// when we first use command list, we should reset it. Before we reset it, we should close it
 		m_CommandList->Close();
-
-		// Create swap chain
-		m_SwapChain.Reset();
-
-		DXGI_SWAP_CHAIN_DESC swapChainDesc;
-		swapChainDesc.BufferDesc.Width = (UINT)Application::Get().GetWindow().GetWidth();
-		swapChainDesc.BufferDesc.Height = (UINT)Application::Get().GetWindow().GetHeight();
-		swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-		swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-		swapChainDesc.BufferDesc.Format = DirectX12Context::GetBackBufferFormat();
-		swapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		swapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-		swapChainDesc.SampleDesc.Count = DirectX12Context::Get4xMSAAState() ? 4 : 1;
-		swapChainDesc.SampleDesc.Quality = DirectX12Context::Get4xMSAAState() ? (DirectX12Context::Get4xMSAAQualityCount() - 1) : 0;
-		swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-		swapChainDesc.BufferCount = 2;
-		swapChainDesc.OutputWindow = static_cast<HWND>(Application::Get().GetWindow().GetNativeWindow());
-		swapChainDesc.Windowed = true;
-		swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-		ThrowIfFailed(m_DxgiFactory->CreateSwapChain(m_RenderQueue->GetCommandQueueNative(),
-			&swapChainDesc,
-			m_SwapChain.GetAddressOf()));
+		m_SwapChain = CreateRef<DirectX12SwapChain>(m_DxgiFactory.Get(), m_RenderQueue);
 
 		CreateRtvAndDsvDescriptorsHeap();
 		OnResize();
-		LogAdapters();
 	}
 
 	void DirectX12RendererAPI::CreateRtvAndDsvDescriptorsHeap()
@@ -89,121 +64,22 @@ namespace SG
 	{
 		for (int i = 0; i < 2; i++)
 		{
-			ThrowIfFailed(m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&m_SwapChainBuffer[i])));
-			m_RtvHeap->CreateRtv(m_D3dDevice.Get(), m_SwapChainBuffer[i].Get(), i, nullptr);
+			m_SwapChain->GetBuffer(i, m_SwapChainBuffers[i].GetPtr());
+			m_RtvHeap->CreateRtv(m_D3dDevice.Get(), m_SwapChainBuffers[i].GetNativePtr(), i, nullptr);
 		}
 	}
 
 	void DirectX12RendererAPI::CreateDsv()
 	{
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Format = DirectX12Context::GetDepthStencilFormat();
-		dsvDesc.Texture2D.MipSlice = 0;
-		m_DsvHeap->CreateDsv(m_D3dDevice.Get(), m_DepthStencilBuffer.Get(), 0, &dsvDesc);
-	}
-
-	void DirectX12RendererAPI::Clear()
-	{
-		// Reuse the memory associated with command recording.
-		// We can only reset when the associated command lists have finished execution on the GPU.
-		m_RenderQueue->ResetAlloctor();
-
-		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
-		// Reusing the command list reuses memory.
-		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
-
-		// Indicate a state transition on the resource usage.
-		m_CommandList->ResourceBarrier(1, GetCurrBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
-		m_CommandList->SetViewports(1, &m_ScreenViewport);
-		m_CommandList->SetScissorRect(1, &m_ScissorRect);
-
-		// Clear the back buffer and depth buffer.
-		m_CommandList->ClearRtv(m_RtvHeap->GetView(m_CurrBackBuffer), DirectX::Colors::Beige, 0, nullptr);
-		m_CommandList->ClearDsv(m_DsvHeap->GetView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f,
-			0, 0, nullptr);
-
-		// Specify the buffers we are going to render to.
-		m_CommandList->SetRenderTarget(1, &m_RtvHeap->GetView(m_CurrBackBuffer), true, &m_DsvHeap->GetView());
-
-		// Indicate a state transition on the resource usage.
-		m_CommandList->ResourceBarrier(1, GetCurrBackBuffer(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-
-		// Done recording commands.
-		m_CommandList->Close();
-
-		// Add the command list to the queue for execution.
-		m_RenderQueue->ExecuteCommandLists(m_CommandList->GetCommandListNative());
-
-		// swap the back and front buffers
-		//m_SwapChain->SwapBuffer();
-		ThrowIfFailed(m_SwapChain->Present(0, 0));
-		m_CurrBackBuffer = (m_CurrBackBuffer + 1) % 2;
-
-		// Wait until frame commands are complete.  This waiting is inefficient and is
-		// done for simplicity.  Later we will show how to organize our rendering code
-		// so we do not have to wait per frame.
-		m_RenderQueue->FlushCommandQueue();
-	}
-
-	ID3D12Resource* DirectX12RendererAPI::GetCurrBackBuffer() const
-	{
-		return m_SwapChainBuffer[m_CurrBackBuffer].Get();
-	}
-
-	void DirectX12RendererAPI::OnResize()
-	{
-		assert(m_D3dDevice);
-		assert(m_SwapChain);
-		assert(m_RenderQueue->GetCommandAllocatorNative());
-
-		uint32_t width = Application::Get().GetWindow().GetWidth();
-		uint32_t height = Application::Get().GetWindow().GetHeight();
-
-		// Flush before changing any resources.
-		m_RenderQueue->FlushCommandQueue();
-
-		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
-
-		// Release the previous resources we will be recreating.
-		//m_SwapChain->ResetBuffers();
-		for (int i = 0; i < 2; ++i)
-			m_SwapChainBuffer[i].Reset();
-		m_DepthStencilBuffer.Reset();
-
-		//m_SwapChain->ResizeBuffers();
-		// Resize the swap chain.
-		ThrowIfFailed(m_SwapChain->ResizeBuffers(
-			2,
-			(UINT)Application::Get().GetWindow().GetWidth(),
-			(UINT)Application::Get().GetWindow().GetHeight(),
-			DirectX12Context::GetBackBufferFormat(),
-			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
-		
-		m_CurrBackBuffer = 0;
-
-		CreateRtv();
-
 		// Create the depth/stencil buffer and view.
 		D3D12_RESOURCE_DESC depthStencilDesc;
 		depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		depthStencilDesc.Alignment = 0;
-		depthStencilDesc.Width = width;
-		depthStencilDesc.Height = height;
+		depthStencilDesc.Width = Application::Get().GetWindow().GetWidth();
+		depthStencilDesc.Height = Application::Get().GetWindow().GetHeight();
 		depthStencilDesc.DepthOrArraySize = 1;
 		depthStencilDesc.MipLevels = 1;
-		// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
-		// the depth buffer.  Therefore, because we need to create two views to the same resource:
-		//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-		//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
-		// we need to create the depth buffer resource with a typeless format.  
 		depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-
 		depthStencilDesc.SampleDesc.Count = DirectX12Context::Get4xMSAAState() ? 4 : 1;
 		depthStencilDesc.SampleDesc.Quality = DirectX12Context::Get4xMSAAState() ? (DirectX12Context::Get4xMSAAQualityCount() - 1) : 0;
 		depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -219,12 +95,88 @@ namespace SG
 			&depthStencilDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			&optClear,
-			IID_PPV_ARGS(m_DepthStencilBuffer.GetAddressOf())));
+			IID_PPV_ARGS(&m_DepthStencilBuffer.GetPtr())));
 
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsvDesc.Format = DirectX12Context::GetDepthStencilFormat();
+		dsvDesc.Texture2D.MipSlice = 0;
+		m_DsvHeap->CreateDsv(m_D3dDevice.Get(), m_DepthStencilBuffer.GetNativePtr(), 0, &dsvDesc);
+	}
+
+	void DirectX12RendererAPI::Clear()
+	{
+		// Reuse the memory associated with command recording.
+		// We can only reset when the associated command lists have finished execution on the GPU.
+		m_RenderQueue->ResetAlloctor();
+
+		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
+		// Reusing the command list reuses memory.
+		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
+
+		// Indicate a state transition on the resource usage.
+		m_CommandList->ResourceBarrier(1, m_SwapChainBuffers[m_SwapChain->GetCurrBufferIndex()].GetNativePtr(),
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
+		m_CommandList->SetViewports(1, &m_ScreenViewport);
+		m_CommandList->SetScissorRect(1, &m_ScissorRect);
+
+		// Clear the back buffer and depth buffer.
+		m_CommandList->ClearRtv(m_RtvHeap->GetView(m_SwapChain->GetCurrBufferIndex()), DirectX::Colors::Beige, 0, nullptr);
+		m_CommandList->ClearDsv(m_DsvHeap->GetView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f,
+			0, 0, nullptr);
+
+		// Specify the buffers we are going to render to.
+		m_CommandList->SetRenderTarget(1, &m_RtvHeap->GetView(m_SwapChain->GetCurrBufferIndex()), true, &m_DsvHeap->GetView());
+
+		// Indicate a state transition on the resource usage.
+		m_CommandList->ResourceBarrier(1, m_SwapChainBuffers[m_SwapChain->GetCurrBufferIndex()].GetNativePtr(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+		// Done recording commands.
+		m_CommandList->Close();
+
+		// Add the command list to the queue for execution.
+		m_RenderQueue->ExecuteCommandLists(m_CommandList->GetCommandListNative());
+
+		// swap the back and front buffers
+		m_SwapChain->Present();
+
+		// Wait until frame commands are complete.  This waiting is inefficient and is
+		// done for simplicity.  Later we will show how to organize our rendering code
+		// so we do not have to wait per frame.
+		m_RenderQueue->FlushCommandQueue();
+	}
+
+	void DirectX12RendererAPI::OnResize()
+	{
+		assert(m_D3dDevice);
+		assert(m_SwapChain);
+		assert(m_RenderQueue);
+
+		uint32_t width = Application::Get().GetWindow().GetWidth();
+		uint32_t height = Application::Get().GetWindow().GetHeight();
+
+		// Flush before changing any resources.
+		m_RenderQueue->FlushCommandQueue();
+
+		m_CommandList->Reset(m_RenderQueue->GetCommandAllocatorNative(), nullptr);
+
+		// Release the previous resources we will be recreating.
+		for (int i = 0; i < 2; ++i)
+			m_SwapChainBuffers[i].Reset();
+		m_DepthStencilBuffer.Reset();
+
+		// Resize the swap chain.
+		m_SwapChain->ResizeBuffer(2, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+
+		CreateRtv();
 		CreateDsv();
 
 		// Transition the resource from its initial state to be used as a depth buffer.
-		m_CommandList->ResourceBarrier(1, m_DepthStencilBuffer.Get(),
+		m_CommandList->ResourceBarrier(1, m_DepthStencilBuffer.GetNativePtr(),
 			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
 		// Execute the resize commands.
@@ -241,78 +193,8 @@ namespace SG
 		m_ScreenViewport.Height = static_cast<float>(height);
 		m_ScreenViewport.MinDepth = 0.0f;
 		m_ScreenViewport.MaxDepth = 1.0f;
-
+		
 		m_ScissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-	}
-
-	void DirectX12RendererAPI::LogAdapters()
-	{
-		UINT i = 0;
-		IDXGIAdapter* adapter = nullptr;
-		std::vector<IDXGIAdapter*> adapterList;
-		while (m_DxgiFactory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
-		{
-			DXGI_ADAPTER_DESC desc;
-			adapter->GetDesc(&desc);
-
-			std::wstring text = L"***Adapter: ";
-			text += desc.Description;
-
-			SG_CORE_INFO(text);
-
-			adapterList.push_back(adapter);
-			++i;
-		}
-
-		for (size_t i = 0; i < adapterList.size(); ++i)
-		{
-			LogAdapterOutputs(adapterList[i]);
-			ReleaseCom(adapterList[i]);
-		}
-	}
-
-	void DirectX12RendererAPI::LogAdapterOutputs(IDXGIAdapter* adapter)
-	{
-		UINT i = 0;
-		IDXGIOutput* output = nullptr;
-		while (adapter->EnumOutputs(i, &output) != DXGI_ERROR_NOT_FOUND)
-		{
-			DXGI_OUTPUT_DESC desc;
-			output->GetDesc(&desc);
-
-			std::wstring text = L"***Output: ";
-			text += desc.DeviceName;
-			SG_CORE_INFO(text);
-
-			//LogOutputDisplayModes(output, m_BackBufferFormat);
-
-			ReleaseCom(output);
-			++i;
-		}
-	}
-
-	void DirectX12RendererAPI::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
-	{
-		UINT count = 0;
-		UINT flags = 0;
-
-		// Call with nullptr to get list count.
-		output->GetDisplayModeList(format, flags, &count, nullptr);
-
-		std::vector<DXGI_MODE_DESC> modeList(count);
-		output->GetDisplayModeList(format, flags, &count, &modeList[0]);
-
-		for (auto& x : modeList)
-		{
-			UINT n = x.RefreshRate.Numerator;
-			UINT d = x.RefreshRate.Denominator;
-			std::wstring text =
-				L"  Width = " + std::to_wstring(x.Width) +
-				L"  Height = " + std::to_wstring(x.Height) +
-				L"  Refresh = " + std::to_wstring(n) + L"/" + std::to_wstring(d);
-
-			SG_CORE_INFO(text);
-		}
 	}
 
 }

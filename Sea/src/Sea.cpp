@@ -14,6 +14,10 @@ public:
 		SG::Renderer::Init();
 	}
 
+	void OnEvent(SG::Event& e) override
+	{
+	}
+
 	void OnUpdate() override
 	{
 		SG::RenderCommand::Clear();
