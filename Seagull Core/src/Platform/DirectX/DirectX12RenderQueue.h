@@ -23,6 +23,8 @@ namespace SG
 		
 		inline ID3D12CommandQueue* GetCommandQueueNative() { return m_CommandQueue.Get(); }
 		inline ID3D12CommandAllocator* GetCommandAllocatorNative() { return m_CommandAllocator.Get(); }
+
+		operator bool() const { return m_CommandQueue && m_CommandAllocator; }
 	private:
 		D3D12_COMMAND_QUEUE_DESC m_CommandQueueDesc;
 

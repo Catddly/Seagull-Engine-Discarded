@@ -4,10 +4,10 @@
 #include "Core/EntryPoint.h"
 // ------------------------------------------
 
-class MessageLayer : public SG::Layer
+class DemoLayer : public SG::Layer
 {
 public:
-	MessageLayer() : SG::Layer("MessageLayer") {}
+	DemoLayer() : SG::Layer(L"DemoLayer") {}
 
 	void OnAttach() override
 	{
@@ -30,7 +30,7 @@ class Sea : public SG::Application
 public:
 	Sea() : SG::Application(L"Sea") 
 	{
-		PushLayer(new MessageLayer());
+		PushLayer(new DemoLayer());
 	}
 	~Sea() = default;
 private:

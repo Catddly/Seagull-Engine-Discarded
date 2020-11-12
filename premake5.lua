@@ -13,8 +13,11 @@ workspace "Seagull"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = { }
 IncludeDir["spdlog"] = "Seagull Core/vendor/spdlog/include"
+IncludeDir["imgui"] = "Seagull Core/vendor/imgui"
 
 group "Dependencies"
+
+    include "Seagull Core/vendor/imgui"
 
 group ""
 
@@ -51,10 +54,15 @@ project "Seagull Core"
     includedirs
     {
         "%{prj.name}/src",
-        "%{IncludeDir.spdlog}"
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.imgui}"
     }
 
     -- link libraries
+    links
+    {
+        "imgui"
+    }
 
 filter "system:windows"
     systemversion "latest"
@@ -107,7 +115,8 @@ project "Sea"
     includedirs
     {
         "Seagull Core/src",
-        "%{IncludeDir.spdlog}"
+        "%{IncludeDir.spdlog}",
+        "%{IncludeDir.imgui}"
     }
 
     -- link libraries

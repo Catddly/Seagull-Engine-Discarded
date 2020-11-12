@@ -35,7 +35,16 @@ namespace SG
 	}
 
 	DirectX12RendererAPI::~DirectX12RendererAPI()
-	{}
+	{
+#ifdef DX12_ENABLE_DEBUG_LAYER
+		IDXGIDebug1* pDebug = NULL;
+		if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&pDebug))))
+		{
+			pDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_SUMMARY);
+			pDebug->Release();
+		}
+#endif
+	}
 
 	void DirectX12RendererAPI::Init()
 	{
@@ -51,7 +60,7 @@ namespace SG
 		m_SwapChain = CreateRef<DirectX12SwapChain>(m_DxgiFactory.Get(), m_RenderQueue);
 
 		CreateRtvAndDsvDescriptorsHeap();
-		OnResize();
+		OnWindowResize(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
 	void DirectX12RendererAPI::CreateRtvAndDsvDescriptorsHeap()
@@ -150,14 +159,11 @@ namespace SG
 		m_RenderQueue->FlushCommandQueue();
 	}
 
-	void DirectX12RendererAPI::OnResize()
+	void DirectX12RendererAPI::OnWindowResize(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		assert(m_D3dDevice);
-		assert(m_SwapChain);
-		assert(m_RenderQueue);
-
-		uint32_t width = Application::Get().GetWindow().GetWidth();
-		uint32_t height = Application::Get().GetWindow().GetHeight();
+		assert(bool(m_SwapChain));
+		assert(bool(m_RenderQueue));
 
 		// Flush before changing any resources.
 		m_RenderQueue->FlushCommandQueue();
@@ -194,7 +200,13 @@ namespace SG
 		m_ScreenViewport.MinDepth = 0.0f;
 		m_ScreenViewport.MaxDepth = 1.0f;
 		
-		m_ScissorRect = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+		m_ScissorRect = { static_cast<LONG>(x), static_cast<LONG>(y),
+			static_cast<LONG>(width), static_cast<LONG>(height) };
+	}
+
+	void DirectX12RendererAPI::SetViewportSize(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+	{
+		OnWindowResize(x, y, width, height);
 	}
 
 }

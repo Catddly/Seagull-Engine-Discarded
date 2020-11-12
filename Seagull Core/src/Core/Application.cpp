@@ -5,6 +5,8 @@
 #include "Utilis/Timestep.h"
 #include "Event/Event.h"
 
+#include "Renderer/RenderCommand.h"
+
 namespace SG
 {
 
@@ -150,6 +152,10 @@ namespace SG
 			s_IsMinimized = true;
 			return false;
 		}
+
+		if (s_IsInitialized)
+			RenderCommand::SetViewportSize(e.GetWidth(), e.GetHeight());
+		s_IsMinimized = false;
 
 		return false;
 	}

@@ -1,0 +1,3 @@
+[submodule "Seagull"]
+	path = Seagull Core/vendor/imgui
+	url = https://github.com/ocornut/imgui

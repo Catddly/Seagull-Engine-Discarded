@@ -20,6 +20,11 @@ namespace SG
 		{
 			s_RendererAPI->Clear();
 		}
+
+		static inline void SetViewportSize(uint32_t width, uint32_t height)
+		{
+			s_RendererAPI->SetViewportSize(0, 0, width, height);
+		}
 	private:
 		static Scope<RendererAPI> s_RendererAPI;
 	};

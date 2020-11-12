@@ -14,6 +14,15 @@
 #include "DirectX12Resource.h"
 #include "DirectX12SwapChain.h"
 
+#if defined(_DEBUG) && defined(SG_DEBUG)
+	#define DX12_ENABLE_DEBUG_LAYER
+#endif
+
+#ifdef DX12_ENABLE_DEBUG_LAYER
+	#include <dxgidebug.h>
+	#pragma comment(lib, "dxguid.lib")
+#endif
+
 // Link necessary d3d12 libraries.
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -34,8 +43,10 @@ namespace SG
 
 		virtual void Init() override;
 		virtual void Clear() override;
+
+		virtual void SetViewportSize(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 	private:
-		void OnResize();
+		void OnWindowResize(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		void CreateRtvAndDsvDescriptorsHeap();
 		void CreateRtv();
 		void CreateDsv();
@@ -47,17 +58,17 @@ namespace SG
 		ComPtr<IDXGIFactory7> m_DxgiFactory;
 
 		Ref<DirectX12SwapChain> m_SwapChain;
-		DirectX12Resource m_SwapChainBuffers[2];
-		DirectX12Resource m_DepthStencilBuffer;
-
-		Ref<DirectX12DescriptorHeap> m_RtvHeap;
-		Ref<DirectX12DescriptorHeap> m_DsvHeap;
-
-		D3D12_VIEWPORT m_ScreenViewport = {};
-		D3D12_RECT m_ScissorRect = {};
 
 		Ref<DirectX12RenderQueue> m_RenderQueue;
 		Ref<DirectX12CommandList> m_CommandList;
+
+		Ref<DirectX12DescriptorHeap> m_RtvHeap;
+		Ref<DirectX12DescriptorHeap> m_DsvHeap;
+		DirectX12Resource m_SwapChainBuffers[2];
+		DirectX12Resource m_DepthStencilBuffer;
+
+		D3D12_VIEWPORT m_ScreenViewport = {};
+		D3D12_RECT m_ScissorRect = {};
 	};
 
 }

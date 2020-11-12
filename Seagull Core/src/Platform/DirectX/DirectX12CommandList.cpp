@@ -13,7 +13,7 @@ namespace SG
 			nullptr /* PSO */, IID_PPV_ARGS(m_CommandList.GetAddressOf())));
 	}
 
-	void DirectX12CommandList::ResourceBarrier(UINT numBarriers, ID3D12Resource* resource, 
+	void DirectX12CommandList::ResourceBarrier(UINT numBarriers, ID3D12Resource* resource,
 		D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter) const noexcept
 	{
 		m_CommandList->ResourceBarrier(numBarriers, 

@@ -1,20 +1,16 @@
 #pragma once
 
+#include "Core/Layer.h"
 #include "Event/Event.h"
-
-#include <string>
 
 namespace SG
 {
 
-	class Layer
+	class ImGuiLayer : public Layer 
 	{
 	public:
-		Layer(const std::wstring& name)
-			:m_Name(name) {}
-		virtual ~Layer() = default;
-
-		inline const std::wstring& GetName() const { return m_Name; }
+		ImGuiLayer() : Layer(L"ImGuiLayer") {}
+		~ImGuiLayer() = default;
 
 		virtual void OnAttach() {}
 		virtual void OnDettach() {}
@@ -22,7 +18,6 @@ namespace SG
 		virtual void OnUpdate() {}
 		virtual void OnEvent(Event& e) {}
 	private:
-		std::wstring m_Name;
 	};
 
 }

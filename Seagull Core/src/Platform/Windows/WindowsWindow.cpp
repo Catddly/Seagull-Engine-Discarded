@@ -69,6 +69,11 @@ namespace SG
 	{
 	}
 
+	WindowsWindow::~WindowsWindow()
+	{
+		::UnregisterClass(L"MainWndClass", m_WndProps.WinInstance);
+	}
+
 	bool WindowsWindow::OnCreate()
 	{
 		return InitWindowApp(m_WndProps.WinInstance, m_WndProps.Show);
@@ -81,8 +86,9 @@ namespace SG
 	bool WindowsWindow::InitWindowApp(const HINSTANCE& instanceHandle, int show)
 	{
 		// fill a window class to create a window
-		WNDCLASS myMainWnd;
+		WNDCLASSEX myMainWnd;
 
+		myMainWnd.cbSize = sizeof(WNDCLASSEX);
 		myMainWnd.style = CS_HREDRAW | CS_VREDRAW; // redraw the window if width or height changed
 		myMainWnd.lpfnWndProc = WindowProcess;
 		myMainWnd.cbClsExtra = 0;
@@ -92,10 +98,11 @@ namespace SG
 		myMainWnd.hCursor = LoadCursor(0, IDC_ARROW);
 		myMainWnd.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
 		myMainWnd.lpszMenuName = 0;
-		myMainWnd.lpszClassName = L"BasicWndClass";
+		myMainWnd.lpszClassName = L"MainWndClass";
+		myMainWnd.hIconSm = nullptr;
 
 		// register an instance for myMainWnd
-		if (!RegisterClass(&myMainWnd))
+		if (!RegisterClassEx(&myMainWnd))
 		{
 			MessageBox(0, L"Register class FAILED", L"Error", 0);
 			return false;
@@ -103,7 +110,7 @@ namespace SG
 
 		// Create a window
 		m_MainWnd = CreateWindow(
-			L"BasicWndClass",
+			L"MainWndClass",
 			m_WndProps.Title.c_str(),
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, // x

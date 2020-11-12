@@ -12,7 +12,7 @@ namespace SG
 	{
 	public:
 		WindowsWindow(const WindowProps& props);
-		~WindowsWindow() = default;
+		~WindowsWindow();
 
 		virtual bool OnCreate() override;
 		virtual void OnUpdate() override;

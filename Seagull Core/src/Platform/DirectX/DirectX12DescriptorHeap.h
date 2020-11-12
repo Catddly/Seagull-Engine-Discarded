@@ -12,6 +12,7 @@ namespace SG
 	{
 	public:
 		DirectX12DescriptorHeap(ID3D12Device1* device, D3D12_DESCRIPTOR_HEAP_TYPE type, UINT numDescriptors);
+		~DirectX12DescriptorHeap() = default;
 
 		// TODO: warp ID3D12Resource with SG's own GPUResource
 		void CreateRtv(ID3D12Device1* device, ID3D12Resource* resource, uint32_t index,

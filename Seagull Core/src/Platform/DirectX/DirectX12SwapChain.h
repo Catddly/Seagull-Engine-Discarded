@@ -25,6 +25,8 @@ namespace SG
 		void Present(UINT syncInterval = 0, UINT flags = 0);
 
 		inline UINT GetCurrBufferIndex() const { return m_CurrBackBufferIndex; }
+
+		operator bool() const { return m_SwapChain; }
 	private:
 		ComPtr<IDXGISwapChain> m_SwapChain;
 
