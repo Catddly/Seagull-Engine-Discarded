@@ -12,11 +12,14 @@ namespace SG
 		ImGuiLayer() : Layer(L"ImGuiLayer") {}
 		~ImGuiLayer() = default;
 
-		virtual void OnAttach() {}
-		virtual void OnDettach() {}
+		virtual void OnAttach() override;
+		virtual void OnDettach() override;
 
-		virtual void OnUpdate() {}
-		virtual void OnEvent(Event& e) {}
+		virtual void OnUpdate() override;
+		virtual void OnEvent(Event& e) override;
+
+		void Begin();
+		void End();
 	private:
 	};
 

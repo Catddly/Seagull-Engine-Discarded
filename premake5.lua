@@ -13,11 +13,11 @@ workspace "Seagull"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = { }
 IncludeDir["spdlog"] = "Seagull Core/vendor/spdlog/include"
-IncludeDir["imgui"] = "Seagull Core/vendor/imgui"
+IncludeDir["imgui"] = "Seagull Core/vendor/imgui/imgui"
 
 group "Dependencies"
 
-    include "Seagull Core/vendor/imgui"
+    include "Seagull Core/vendor/imgui/imgui"
 
 group ""
 

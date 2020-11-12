@@ -6,6 +6,7 @@
 #include "Window.h"
 
 #include "LayerStack.h"
+#include "ImGui/ImGuiLayer.h"
 
 #include "Event/MouseEvent.h"
 #include "Event/KeyboardEvent.h"
@@ -54,6 +55,7 @@ namespace SG
 		WindowProps m_MainWndProps;
 
 		LayerStack m_LayerStack;
+		ImGuiLayer* m_ImGuiLayer;
 	};
 
 	// To be define in client side

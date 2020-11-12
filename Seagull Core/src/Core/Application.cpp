@@ -7,6 +7,8 @@
 
 #include "Renderer/RenderCommand.h"
 
+#include "ImGui/ImGuiLayer.h"
+
 namespace SG
 {
 
@@ -22,6 +24,10 @@ namespace SG
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;
 		s_AppName = name;
+
+		// Create ImGuiLayer
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -72,6 +78,14 @@ namespace SG
 					{
 						layer->OnUpdate();
 					}
+
+					// render ImGui
+					m_ImGuiLayer->Begin();
+					{
+						for (Layer* layer : m_LayerStack)
+							layer->OnImGuiRender();
+					}
+					m_ImGuiLayer->End();
 
 					m_MainWindow->OnUpdate();
 				}

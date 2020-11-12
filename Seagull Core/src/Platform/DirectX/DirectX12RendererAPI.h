@@ -45,12 +45,16 @@ namespace SG
 		virtual void Clear() override;
 
 		virtual void SetViewportSize(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+
+		ID3D12Device1* GetDeviceNative() const { return m_D3dDevice.Get(); }
 	private:
 		void OnWindowResize(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		void CreateRtvAndDsvDescriptorsHeap();
 		void CreateRtv();
 		void CreateDsv();
 	private:
+		friend class ImGuiLayer;
+
 #if (defined(DEBUG) | defined(_DEBUG)) & defined(SG_DEBUG)
 		ComPtr<ID3D12Debug> m_DebugController;
 #endif
@@ -64,6 +68,7 @@ namespace SG
 
 		Ref<DirectX12DescriptorHeap> m_RtvHeap;
 		Ref<DirectX12DescriptorHeap> m_DsvHeap;
+		Ref<DirectX12DescriptorHeap> m_SrvHeap;
 		DirectX12Resource m_SwapChainBuffers[2];
 		DirectX12Resource m_DepthStencilBuffer;
 

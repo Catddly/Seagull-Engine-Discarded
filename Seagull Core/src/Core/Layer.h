@@ -20,6 +20,7 @@ namespace SG
 		virtual void OnDettach() {}
 
 		virtual void OnUpdate() {}
+		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 	private:
 		std::wstring m_Name;

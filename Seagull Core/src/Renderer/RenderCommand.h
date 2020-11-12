@@ -25,8 +25,10 @@ namespace SG
 		{
 			s_RendererAPI->SetViewportSize(0, 0, width, height);
 		}
+
+		static inline RendererAPI* GetRenderAPIInstance() { return s_RendererAPI; };
 	private:
-		static Scope<RendererAPI> s_RendererAPI;
+		static RendererAPI* s_RendererAPI;
 	};
 
 }

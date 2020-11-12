@@ -11,7 +11,8 @@ namespace SG
 	class DirectX12DescriptorHeap
 	{
 	public:
-		DirectX12DescriptorHeap(ID3D12Device1* device, D3D12_DESCRIPTOR_HEAP_TYPE type, UINT numDescriptors);
+		DirectX12DescriptorHeap(ID3D12Device1* device, D3D12_DESCRIPTOR_HEAP_TYPE type, 
+			UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flag = D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
 		~DirectX12DescriptorHeap() = default;
 
 		// TODO: warp ID3D12Resource with SG's own GPUResource
@@ -21,6 +22,11 @@ namespace SG
 			const D3D12_DEPTH_STENCIL_VIEW_DESC* desc);
 
 		D3D12_CPU_DESCRIPTOR_HANDLE GetView(uint32_t index = 0) const;
+		D3D12_CPU_DESCRIPTOR_HANDLE& GetCPUStart() { return m_CPUHeapStart; }
+		D3D12_GPU_DESCRIPTOR_HANDLE& GetGPUStart() { return m_GPUHeapStart; }
+
+		ID3D12DescriptorHeap* GetNative() const { return m_DescHeap.Get(); }
+		ID3D12DescriptorHeap* const* GetNativeAddress() const { return m_DescHeap.GetAddressOf(); }
 	private:
 		constexpr D3D12_CPU_DESCRIPTOR_HANDLE Offset(uint32_t index) const;
 

@@ -18,9 +18,14 @@ public:
 	{
 	}
 
+	void OnImGuiRender() override
+	{
+		ImGui::ShowDemoWindow();
+	}
+
 	void OnUpdate() override
 	{
-		SG::RenderCommand::Clear();
+		//SG::RenderCommand::Clear();
 	}
 private:
 };

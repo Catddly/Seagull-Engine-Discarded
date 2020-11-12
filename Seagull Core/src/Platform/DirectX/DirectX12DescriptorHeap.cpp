@@ -7,11 +7,12 @@ namespace SG
 {
 
 	DirectX12DescriptorHeap::DirectX12DescriptorHeap(ID3D12Device1* device, 
-		D3D12_DESCRIPTOR_HEAP_TYPE type, UINT numDescriptors) : m_BindingType(BindingType::None)
+		D3D12_DESCRIPTOR_HEAP_TYPE type, UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flag)
+		: m_BindingType(BindingType::None)
 	{
 		m_HeapDesc.NumDescriptors = numDescriptors;
 		m_HeapDesc.Type = type;
-		m_HeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE; // TODO: support D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE
+		m_HeapDesc.Flags = flag;
 		m_HeapDesc.NodeMask = 0;
 
 		ThrowIfFailed(device->CreateDescriptorHeap(&m_HeapDesc, IID_PPV_ARGS(m_DescHeap.GetAddressOf())));

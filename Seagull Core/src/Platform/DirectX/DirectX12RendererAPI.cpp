@@ -67,6 +67,8 @@ namespace SG
 	{
 		m_RtvHeap = CreateRef<DirectX12DescriptorHeap>(m_D3dDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
 		m_DsvHeap = CreateRef<DirectX12DescriptorHeap>(m_D3dDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
+		m_SrvHeap = CreateRef<DirectX12DescriptorHeap>(m_D3dDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1,
+			D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
 	}
 
 	void DirectX12RendererAPI::CreateRtv()

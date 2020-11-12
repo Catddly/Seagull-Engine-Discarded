@@ -18,9 +18,11 @@ namespace SG
 		~DirectX12CommandList() = default;
 
 		void ResourceBarrier(UINT numBarriers, ID3D12Resource* resource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter) const noexcept;
+		void ResourceBarrier(UINT numBarriers, const D3D12_RESOURCE_BARRIER* pBarriers) const noexcept;
 
 		void SetViewports(UINT num, const D3D12_VIEWPORT* viewport) const noexcept;
 		void SetScissorRect(UINT num, const D3D12_RECT* rect) const noexcept;
+		void SetDescriptorHeaps(UINT numDescritorHeaps, ID3D12DescriptorHeap* const* ppHeaps);
 
 		void ClearRtv(D3D12_CPU_DESCRIPTOR_HANDLE Rtv, const FLOAT* color, UINT numRects,
 			const D3D12_RECT* pRects) const noexcept;

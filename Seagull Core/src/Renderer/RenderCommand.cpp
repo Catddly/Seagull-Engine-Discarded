@@ -5,5 +5,5 @@
 
 namespace SG
 {
-	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<DirectX12RendererAPI>();
+	RendererAPI* RenderCommand::s_RendererAPI = new DirectX12RendererAPI();
 }

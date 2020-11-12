@@ -20,6 +20,11 @@ namespace SG
 			&CD3DX12_RESOURCE_BARRIER::Transition(resource, stateBefore, stateAfter));
 	}
 
+	void DirectX12CommandList::ResourceBarrier(UINT numBarriers, const D3D12_RESOURCE_BARRIER* pBarriers) const noexcept
+	{
+		m_CommandList->ResourceBarrier(numBarriers, pBarriers);
+	}
+
 	void DirectX12CommandList::SetViewports(UINT num, const D3D12_VIEWPORT* viewport) const noexcept
 	{
 		m_CommandList->RSSetViewports(num, viewport);
@@ -30,7 +35,12 @@ namespace SG
 		m_CommandList->RSSetScissorRects(num, rect);
 	}
 
-	void DirectX12CommandList::ClearRtv(D3D12_CPU_DESCRIPTOR_HANDLE Rtv, const FLOAT* color, UINT numRects, 
+	void DirectX12CommandList::SetDescriptorHeaps(UINT numDescritorHeaps, ID3D12DescriptorHeap* const* ppHeaps)
+	{
+		m_CommandList->SetDescriptorHeaps(numDescritorHeaps, ppHeaps);
+	}
+
+	void DirectX12CommandList::ClearRtv(D3D12_CPU_DESCRIPTOR_HANDLE Rtv, const FLOAT* color, UINT numRects,
 		const D3D12_RECT* pRects) const noexcept
 	{
 		m_CommandList->ClearRenderTargetView(Rtv, color, numRects, pRects);
