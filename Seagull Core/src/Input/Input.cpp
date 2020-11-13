@@ -28,7 +28,7 @@ namespace SG
 	std::pair<float, float> Input::GetMousePos()
 	{
 		POINT point = { 0, 0 };
-		auto wnd = static_cast<HWND>(Application::Get().GetWindow().GetNativeWindow());
+		auto wnd = static_cast<HWND>(Application::Get().GetWindow()->GetNativeWindow());
 		::ScreenToClient(wnd, &point);
 		return { (float)point.x, (float)point.y };
 	}

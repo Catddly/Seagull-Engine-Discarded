@@ -119,4 +119,33 @@ namespace SG
 	private:
 	};
 
+	class MouseFocusWindowChangedEvent : public Event
+	{
+	public:
+		MouseFocusWindowChangedEvent(void* wnd, WORD pos, WORD type)
+			:m_NativeWindow(wnd), m_HitCursorPosition(pos), m_EventTriggerType(type) {}
+		MouseFocusWindowChangedEvent(const MouseFocusWindowChangedEvent&) = delete;
+		~MouseFocusWindowChangedEvent() = default;
+
+		inline void* GetNativeWindow() const { return m_NativeWindow; }
+		inline WORD GetCursorPosition() const { return m_HitCursorPosition; }
+		inline WORD GetEventTriggerType() const { return m_EventTriggerType; }
+
+		EVENT_TYPE(MouseFocusWindowChanged)
+		EVENT_CATEGORY(EventCategoryMouse | EventCategoryInput)
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "MouseFocusWindowChangedEvent";
+			return ss.str();
+		}
+
+		MouseFocusWindowChangedEvent operator=(const MouseFocusWindowChangedEvent& rhs) = delete;
+	private:
+		void* m_NativeWindow;
+		WORD m_HitCursorPosition;
+		WORD m_EventTriggerType;
+	};
+
 }

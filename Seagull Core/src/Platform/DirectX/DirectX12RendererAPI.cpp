@@ -60,7 +60,7 @@ namespace SG
 		m_SwapChain = CreateRef<DirectX12SwapChain>(m_DxgiFactory.Get(), m_RenderQueue);
 
 		CreateRtvAndDsvDescriptorsHeap();
-		OnWindowResize(0, 0, Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		OnWindowResize(0, 0, Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight());
 	}
 
 	void DirectX12RendererAPI::CreateRtvAndDsvDescriptorsHeap()
@@ -86,8 +86,8 @@ namespace SG
 		D3D12_RESOURCE_DESC depthStencilDesc;
 		depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		depthStencilDesc.Alignment = 0;
-		depthStencilDesc.Width = Application::Get().GetWindow().GetWidth();
-		depthStencilDesc.Height = Application::Get().GetWindow().GetHeight();
+		depthStencilDesc.Width = Application::Get().GetWindow()->GetWidth();
+		depthStencilDesc.Height = Application::Get().GetWindow()->GetHeight();
 		depthStencilDesc.DepthOrArraySize = 1;
 		depthStencilDesc.MipLevels = 1;
 		depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;

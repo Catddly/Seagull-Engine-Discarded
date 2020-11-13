@@ -1,7 +1,11 @@
 #pragma once
 
 #include "Core/Layer.h"
+
 #include "Event/Event.h"
+#include "Event/KeyboardEvent.h"
+#include "Event/MouseEvent.h"
+#include "Event/ApplicationEvent.h"
 
 namespace SG
 {
@@ -21,6 +25,17 @@ namespace SG
 		void Begin();
 		void End();
 	private:
+		bool OnWindowResize(WindowResizeEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+		bool OnMouseButtonReleased(MouseButtonReleasedEvent& e);
+		bool OnMouseScrolled(MouseScrolledEvent& e);
+		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnKeyReleased(KeyReleasedEvent& e);
+		bool OnKeyTyped(KeyTypedEvent& e);
+		bool OnMouseFocusWindowChanged(MouseFocusWindowChangedEvent& e);
+		bool OnDeviceChanged(DeviceChangedEvent& e);
+	private:
+		friend class WindowsWindow;
 	};
 
 }

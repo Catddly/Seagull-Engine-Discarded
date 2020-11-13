@@ -6,41 +6,105 @@
 #include "Event/ApplicationEvent.h"
 
 #include "Core/Application.h"
+#include "ImGui/ImGuiLayer.h"
 
 #include <windowsx.h>
 
 namespace SG
 {
+	LRESULT CALLBACK WndProc(HWND hWnd /*window*/, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		auto window = static_cast<WindowsWindow*>(Application::Get().GetWindow());
+		LRESULT value = window->WindowProcess(hWnd, msg, wParam, lParam);
+		if (value == 0)
+			return 0;
+		else
+			return value;
+	}
+
 	// WPARAM 和 LPARAM 是消息响应机制
-	LRESULT CALLBACK WindowProcess(HWND hWnd /*window*/, UINT msg, WPARAM wParam, LPARAM lParam)
+	LRESULT CALLBACK WindowsWindow::WindowProcess(HWND hWnd /*window*/, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		// TODO: change key code to SG key code
-		auto fn = Application::Get().GetWindow().GetEventCallbackFn();
 		switch (msg)
 		{
-			case WM_LBUTTONDOWN:
+			case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK:
+			case WM_RBUTTONDOWN: case WM_RBUTTONDBLCLK:
+			case WM_MBUTTONDOWN: case WM_MBUTTONDBLCLK:
+			case WM_XBUTTONDOWN: case WM_XBUTTONDBLCLK:
 			{
-				MouseButtonPressedEvent e(VK_LBUTTON, 0); fn(e);
+				int button = 0;
+				if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK) button = VK_LBUTTON;
+				if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONDBLCLK) button = VK_RBUTTON;
+				if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONDBLCLK) button = VK_MBUTTON;
+				if (msg == WM_XBUTTONDOWN || msg == WM_XBUTTONDBLCLK) 
+					button = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1) ? VK_XBUTTON1 : VK_XBUTTON2;
+				MouseButtonPressedEvent e(button, 0); m_EventCallbackFn(e);
 				return 0;
 			}
-			case WM_RBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_RBUTTONUP:
+			case WM_MBUTTONUP:
+			case WM_XBUTTONUP:
 			{
-				MouseButtonPressedEvent e(VK_RBUTTON, 0); fn(e);
+				int button = 0;
+				if (msg == WM_LBUTTONUP) button = VK_LBUTTON;
+				if (msg == WM_RBUTTONUP) button = VK_RBUTTON;
+				if (msg == WM_MBUTTONUP) button = VK_MBUTTON;
+				if (msg == WM_XBUTTONUP) 
+					button = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1) ? VK_XBUTTON1 : VK_XBUTTON2;
+				MouseButtonReleasedEvent e(button); m_EventCallbackFn(e);
 				return 0;
 			}
-			case WM_MBUTTONDOWN:
+			case WM_MOUSEWHEEL:
 			{
-				MouseButtonPressedEvent e(VK_MBUTTON, 0); fn(e);
+				float OffsetV = (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
+				MouseScrolledEvent e(0, OffsetV); m_EventCallbackFn(e);
+				return 0;
+			}
+			case WM_MOUSEHWHEEL:
+			{
+				float OffsetH = (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
+				MouseScrolledEvent e(OffsetH, 0); m_EventCallbackFn(e);
 				return 0;
 			}
 			case WM_KEYDOWN:
+			case WM_SYSKEYDOWN:
 			{
-				if (wParam == VK_ESCAPE) { WindowCloseEvent e(&Application::Get().GetWindow()); fn(e); }
-				if (wParam == 'W') { KeyPressedEvent e('W', LOWORD(lParam)); fn(e); }
-				if (wParam == 'A') { KeyPressedEvent e('A', LOWORD(lParam)); fn(e); }
-				if (wParam == 'S') { KeyPressedEvent e('S', LOWORD(lParam)); fn(e); }
-				if (wParam == 'D') { KeyPressedEvent e('D', LOWORD(lParam)); fn(e); }
-				if (wParam == 'M') { KeyPressedEvent e('M', LOWORD(lParam)); fn(e); }
+				if (wParam < 256) {
+					KeyPressedEvent e(wParam, LOWORD(lParam));
+					m_EventCallbackFn(e);
+				}
+				return 0;
+			}
+			case WM_KEYUP:
+			case WM_SYSKEYUP:
+			{
+				if (wParam < 256) {
+					KeyReleasedEvent e(wParam);
+					m_EventCallbackFn(e);
+				}
+				return 0;
+			}
+			case WM_CHAR:
+			{
+				if (wParam > 0 && wParam < 0x10000)
+				{
+					KeyTypedEvent e((unsigned short)wParam);
+					m_EventCallbackFn(e);
+				}
+				return 0;
+			}
+			case WM_SETCURSOR:
+			{
+				MouseFocusWindowChangedEvent e((void*)lParam, LOWORD(wParam), HIWORD(wParam));
+				m_EventCallbackFn(e);
+				return 0;
+			}
+			case WM_DEVICECHANGE:
+			{
+				DeviceChangedEvent e((UINT)wParam, (void*)lParam);
+				m_EventCallbackFn(e);
 				return 0;
 			}
 			case WM_MOUSEMOVE:
@@ -48,20 +112,26 @@ namespace SG
 				// low 16 bits for x, high 16 bits for y
 				int xPos = GET_X_LPARAM(lParam);
 				int yPos = GET_Y_LPARAM(lParam);
-				MouseMovedEvent e(xPos, yPos); fn(e);
+				MouseMovedEvent e(xPos, yPos); m_EventCallbackFn(e);
 				return 0;
 			}
 			case WM_SIZE:
 			{
-				auto width = LOWORD(lParam);
-				auto height = HIWORD(lParam);
+				auto width = (uint32_t)LOWORD(lParam);
+				auto height = (uint32_t)HIWORD(lParam);
+				m_WndProps.Width = width; m_WndProps.Height = height;
 				WindowResizeEvent e(width, height); 
-				fn(e);
+				m_EventCallbackFn(e);
 				return 0;
+			}
+			case WM_SYSCOMMAND:
+			{
+				if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+					return 0;
 			}
 		}
 
-		return DefWindowProc(hWnd, msg, wParam, lParam);
+		return ::DefWindowProc(hWnd, msg, wParam, lParam);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
@@ -90,7 +160,7 @@ namespace SG
 
 		myMainWnd.cbSize = sizeof(WNDCLASSEX);
 		myMainWnd.style = CS_HREDRAW | CS_VREDRAW; // redraw the window if width or height changed
-		myMainWnd.lpfnWndProc = WindowProcess;
+		myMainWnd.lpfnWndProc = WndProc;
 		myMainWnd.cbClsExtra = 0;
 		myMainWnd.cbWndExtra = 0;
 		myMainWnd.hInstance = instanceHandle;

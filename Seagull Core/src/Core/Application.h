@@ -36,7 +36,7 @@ namespace SG
 		void OnEvent(Event& e);
 
 		static Application& Get() { return *s_Instance; }
-		Window& GetWindow() { return *m_MainWindow; }
+		Window* GetWindow() { return m_MainWindow.get(); }
 	private:
 		bool OnMousePressed(MouseButtonPressedEvent& e);
 		bool OnKeyPressed(KeyPressedEvent& e);

@@ -15,8 +15,8 @@ namespace SG
 		m_SwapChain.Reset();
 
 		m_SwapChainDesc = { };
-		m_SwapChainDesc.BufferDesc.Width = (UINT)Application::Get().GetWindow().GetWidth();
-		m_SwapChainDesc.BufferDesc.Height = (UINT)Application::Get().GetWindow().GetHeight();
+		m_SwapChainDesc.BufferDesc.Width = (UINT)Application::Get().GetWindow()->GetWidth();
+		m_SwapChainDesc.BufferDesc.Height = (UINT)Application::Get().GetWindow()->GetHeight();
 		m_SwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 		m_SwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 		m_SwapChainDesc.BufferDesc.Format = DirectX12Context::GetBackBufferFormat();
@@ -26,7 +26,7 @@ namespace SG
 		m_SwapChainDesc.SampleDesc.Quality = DirectX12Context::Get4xMSAAState() ? (DirectX12Context::Get4xMSAAQualityCount() - 1) : 0;
 		m_SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		m_SwapChainDesc.BufferCount = 2;
-		m_SwapChainDesc.OutputWindow = static_cast<HWND>(Application::Get().GetWindow().GetNativeWindow());
+		m_SwapChainDesc.OutputWindow = static_cast<HWND>(Application::Get().GetWindow()->GetNativeWindow());
 		m_SwapChainDesc.Windowed = true;
 		m_SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		m_SwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -43,8 +43,8 @@ namespace SG
 	void DirectX12SwapChain::ResizeBuffer(UINT bufferCount, UINT swapChainFormat)
 	{
 		ThrowIfFailed(m_SwapChain->ResizeBuffers(bufferCount,
-			Application::Get().GetWindow().GetWidth(),
-			Application::Get().GetWindow().GetHeight(),
+			Application::Get().GetWindow()->GetWidth(),
+			Application::Get().GetWindow()->GetHeight(),
 			DirectX12Context::GetBackBufferFormat(),
 			swapChainFormat));
 		m_CurrBackBufferIndex = 0;

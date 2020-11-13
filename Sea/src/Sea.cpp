@@ -11,7 +11,7 @@ public:
 
 	void OnAttach() override
 	{
-		SG::Renderer::Init();
+		//SG::Renderer::Init();
 	}
 
 	void OnEvent(SG::Event& e) override

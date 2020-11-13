@@ -25,9 +25,10 @@ namespace SG
 		{
 			s_RendererAPI->SetViewportSize(0, 0, width, height);
 		}
+	private:
+		friend class ImGuiLayer;
 
 		static inline RendererAPI* GetRenderAPIInstance() { return s_RendererAPI; };
-	private:
 		static RendererAPI* s_RendererAPI;
 	};
 

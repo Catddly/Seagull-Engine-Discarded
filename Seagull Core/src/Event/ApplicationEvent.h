@@ -73,4 +73,31 @@ namespace SG
 		EVENT_TYPE(AppRender)
 		EVENT_CATEGORY(EventCategoryApplication)
 	};
+
+	class DeviceChangedEvent : public Event
+	{
+	public:
+		DeviceChangedEvent(UINT msg, void* info)
+			: m_MessageType(msg), m_Info(info) {}
+		DeviceChangedEvent(const DeviceChangedEvent&) = delete;
+		~DeviceChangedEvent() = default;
+
+		inline UINT GetMessage() const { return m_MessageType; }
+		inline void* GetInfomationStructPtr() const { return m_Info; }
+
+		std::string ToString() const override
+		{
+			std::stringstream ss;
+			ss << "DeviceChangedEvent";
+			return ss.str();
+		}
+
+		EVENT_TYPE(DeviceChanged)
+		EVENT_CATEGORY(EventCategoryApplication)
+
+		DeviceChangedEvent operator=(const DeviceChangedEvent& rhs) = delete;
+	private:
+		UINT m_MessageType;
+		void* m_Info;
+	};
 }

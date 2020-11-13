@@ -24,6 +24,8 @@ namespace SG
 		virtual inline uint32_t GetHeight() const override { return m_WndProps.Height; }
 
 		virtual inline void* GetNativeWindow() const { return m_MainWnd; }
+
+		LRESULT CALLBACK WindowProcess(HWND hWnd /*window*/, UINT msg, WPARAM wParam, LPARAM lParam);
 	private:
 		bool InitWindowApp(const HINSTANCE& instanceHandle, int show);
 	private:

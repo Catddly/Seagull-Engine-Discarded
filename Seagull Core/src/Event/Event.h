@@ -11,9 +11,9 @@ namespace SG
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender,
+		AppTick, AppUpdate, AppRender, DeviceChanged,
 		KeyPressed, KeyReleased, KeyTyped,
-		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled, MouseFocusWindowChanged
 	};
 
 	enum EventCategory
@@ -35,9 +35,6 @@ namespace SG
 	class Event
 	{
 	public:
-		Event() = default;
-		virtual ~Event() = default;
-
 		virtual EventType GetEventType() const = 0;
 		virtual int GetCategoryFlag() const = 0;
 		virtual const char* GetName() const = 0;
@@ -45,9 +42,10 @@ namespace SG
 
 		inline bool IsInCategory(EventCategory cat) { return cat & GetCategoryFlag(); }
 		inline bool IsHandled() { return m_IsHandled; }
-
 	protected:
 		friend class EventDispatcher;
+		Event() = default;
+		virtual ~Event() = default;
 
 		bool m_IsHandled = false;
 	};

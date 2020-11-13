@@ -24,10 +24,6 @@ namespace SG
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;
 		s_AppName = name;
-
-		// Create ImGuiLayer
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
 	}
 
 	Application::~Application()
@@ -44,9 +40,15 @@ namespace SG
 		WindowProps m_MainWndProps = WindowProps(wndInstance, show);
 		m_MainWindow = Window::Create(m_MainWndProps);
 		m_MainWindow->SetEventCallbackFn(SG_BIND_EVENT_FUNC(Application::OnEvent));
-			
+
 		if (!m_MainWindow->OnCreate())
 			return false;
+
+		RenderCommand::Init();
+
+		// Create ImGuiLayer
+		m_ImGuiLayer = new ImGuiLayer();
+		PushOverlay(m_ImGuiLayer);
 
 		if (!s_IsInitialized)
 			for (auto layer : m_LayerStack)
@@ -142,6 +144,8 @@ namespace SG
 	{
 		if (e.GetKeycode() == 'M')
 			s_EnableEventLog = !s_EnableEventLog;
+		if (e.GetKeycode() == VK_ESCAPE)
+			s_IsRunning = false;
 		return false;
 	}
 
@@ -161,7 +165,7 @@ namespace SG
 
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		if (e.GetWidth() == SIZE_MINIMIZED || e.GetHeight() == SIZE_MINIMIZED)
 		{
 			s_IsMinimized = true;
 			return false;
