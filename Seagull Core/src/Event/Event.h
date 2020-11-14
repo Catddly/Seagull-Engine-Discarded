@@ -11,7 +11,7 @@ namespace SG
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender, DeviceChanged,
+		AppTick, AppActive, AppUpdate, AppRender, DeviceChanged,
 		KeyPressed, KeyReleased, KeyTyped,
 		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled, MouseFocusWindowChanged
 	};

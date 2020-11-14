@@ -86,6 +86,12 @@ namespace SG
 				}
 				return 0;
 			}
+			case WM_ACTIVATE:
+			{
+				AppActiveEvent e(LOWORD(wParam));
+				m_EventCallbackFn(e);
+				return 0;
+			}
 			case WM_CHAR:
 			{
 				if (wParam > 0 && wParam < 0x10000)
@@ -97,7 +103,7 @@ namespace SG
 			}
 			case WM_SETCURSOR:
 			{
-				MouseFocusWindowChangedEvent e((void*)lParam, LOWORD(wParam), HIWORD(wParam));
+				MouseFocusWindowChangedEvent e((void*)wParam, LOWORD(lParam), HIWORD(lParam));
 				m_EventCallbackFn(e);
 				return 0;
 			}
@@ -120,7 +126,7 @@ namespace SG
 				auto width = (uint32_t)LOWORD(lParam);
 				auto height = (uint32_t)HIWORD(lParam);
 				m_WndProps.Width = width; m_WndProps.Height = height;
-				WindowResizeEvent e(width, height); 
+				WindowResizeEvent e(width, height);
 				m_EventCallbackFn(e);
 				return 0;
 			}

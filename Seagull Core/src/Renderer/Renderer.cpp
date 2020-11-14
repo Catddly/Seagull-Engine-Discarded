@@ -11,4 +11,9 @@ namespace SG
 		RenderCommand::Init();
 	}
 
+	void Renderer::Shutdown()
+	{
+
+	}
+
 }

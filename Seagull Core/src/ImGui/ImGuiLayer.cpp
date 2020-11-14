@@ -3,8 +3,8 @@
 
 #include "imgui.h"
 
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx12.h"
+#include "backends/imgui_impl_dx12.h"
+#include "backends/imgui_impl_win32.h"
 
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
@@ -48,18 +48,30 @@ namespace SG
 
 	void ImGuiLayer::OnAttach()
 	{
-		ImGui_ImplWin32_EnableDpiAwareness();
 		HWND hwnd = static_cast<HWND>(Application::Get().GetWindow()->GetNativeWindow());
-		auto instance = (DirectX12RendererAPI*)RenderCommand::GetRenderAPIInstance();
+		auto instance = (DirectX12RendererAPI*)(RenderCommand::GetRenderAPIInstance());
 
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		//io.ConfigViewportsNoAutoMerge = true;
+		//io.ConfigViewportsNoTaskBarIcon = true;
 
 		// Setup Dear ImGui style
 		ImGui::StyleColorsLight();
+
+		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
 
 		// Setup Platform/Renderer backends
 		ImGui_ImplWin32_Init(hwnd);
@@ -71,11 +83,14 @@ namespace SG
 
 	void ImGuiLayer::OnDettach()
 	{
+		auto instance = (DirectX12RendererAPI*)(RenderCommand::GetRenderAPIInstance());
+		instance->m_RenderQueue->FlushCommandQueue();
 		ImGui_ImplDX12_Shutdown();
 		ImGui_ImplWin32_Shutdown();
+		ImGui::DestroyContext();
 	}
 
-	void ImGuiLayer::OnUpdate()
+	void ImGuiLayer::OnUpdate(DeltaTime dt)
 	{
 
 	}
@@ -91,6 +106,7 @@ namespace SG
 	void ImGuiLayer::End()
 	{
 		ImVec4 clear_color = ImVec4(1.0f, 0.85f, 0.80f, 1.00f);
+		ImGuiIO& io = ImGui::GetIO();
 		auto instance = static_cast<DirectX12RendererAPI*>(RenderCommand::GetRenderAPIInstance());
 
 		// Rendering
@@ -122,12 +138,18 @@ namespace SG
 
 		instance->m_RenderQueue->ExecuteCommandLists(instance->m_CommandList->GetCommandListNative());
 
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault(NULL, (void*)instance->m_CommandList->GetCommandListNative());
+		}
+
 		instance->m_SwapChain->Present(1, 0); // Present with vsync
 		//g_pSwapChain->Present(0, 0); // Present without vsync
 
 		instance->m_RenderQueue->FlushCommandQueue();
 	}
-
 
 	void ImGuiLayer::OnEvent(Event& e)
 	{
@@ -148,8 +170,6 @@ namespace SG
 
 	bool ImGuiLayer::OnWindowResize(WindowResizeEvent& e)
 	{
-		//ImGuiIO& io = ImGui::GetIO();
-		//io.Fonts->TexID = NULL; // We copied g_pFontTextureView to io.Fonts->TexID so let's clear that as well.
 		return false;
 	}
 
@@ -224,8 +244,8 @@ namespace SG
 	bool ImGuiLayer::OnMouseFocusWindowChanged(MouseFocusWindowChangedEvent& e)
 	{
 		auto pos = e.GetCursorPosition();
-		if (pos == HTCLIENT && ImGui_ImplWin32_UpdateMouseCursor())
-			return true;
+		if (pos == HTCLIENT)
+			ImGui_ImplWin32_UpdateMouseCursor();
 		return false;
 	}
 
@@ -236,83 +256,5 @@ namespace SG
 		//	g_WantUpdateHasGamepad = true;
 		return false;
 	}
-
-	//// Win32 message handler
-	//LRESULT WINAPI ImGuiLayer::ImGuiWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	//{
-	//	if (ImGui::GetCurrentContext() == NULL)
-	//		return 0;
-
-	//	ImGuiIO& io = ImGui::GetIO();
-
-	//	switch (msg)
-	//	{
-	//		//case WM_SIZE:
-	//		//{
-	//		//	RenderCommand::SetViewportSize((uint32_t)LOWORD(lParam), (uint32_t)HIWORD(lParam));
-	//		//	return 0;
-	//		//}
-	//		case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK:
-	//		case WM_RBUTTONDOWN: case WM_RBUTTONDBLCLK:
-	//		case WM_MBUTTONDOWN: case WM_MBUTTONDBLCLK:
-	//		case WM_XBUTTONDOWN: case WM_XBUTTONDBLCLK:
-	//		{
-	//			int button = 0;
-	//			if (msg == WM_LBUTTONDOWN || msg == WM_LBUTTONDBLCLK) { button = 0; }
-	//			if (msg == WM_RBUTTONDOWN || msg == WM_RBUTTONDBLCLK) { button = 1; }
-	//			if (msg == WM_MBUTTONDOWN || msg == WM_MBUTTONDBLCLK) { button = 2; }
-	//			if (msg == WM_XBUTTONDOWN || msg == WM_XBUTTONDBLCLK) { button = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1) ? 3 : 4; }
-	//			if (!ImGui::IsAnyMouseDown() && ::GetCapture() == NULL)
-	//				::SetCapture(hwnd);
-	//			io.MouseDown[button] = true;
-	//			return 0;
-	//		}
-	//		case WM_LBUTTONUP:
-	//		case WM_RBUTTONUP:
-	//		case WM_MBUTTONUP:
-	//		case WM_XBUTTONUP:
-	//		{
-	//			int button = 0;
-	//			if (msg == WM_LBUTTONUP) { button = 0; }
-	//			if (msg == WM_RBUTTONUP) { button = 1; }
-	//			if (msg == WM_MBUTTONUP) { button = 2; }
-	//			if (msg == WM_XBUTTONUP) { button = (GET_XBUTTON_WPARAM(wParam) == XBUTTON1) ? 3 : 4; }
-	//			io.MouseDown[button] = false;
-	//			if (!ImGui::IsAnyMouseDown() && ::GetCapture() == hwnd)
-	//				::ReleaseCapture();
-	//			return 0;
-	//		}
-	//		case WM_MOUSEWHEEL:
-	//			io.MouseWheel += (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
-	//			return 0;
-	//		case WM_MOUSEHWHEEL:
-	//			io.MouseWheelH += (float)GET_WHEEL_DELTA_WPARAM(wParam) / (float)WHEEL_DELTA;
-	//			return 0;
-	//		case WM_KEYDOWN:
-	//		case WM_SYSKEYDOWN:
-	//			if (wParam < 256)
-	//				io.KeysDown[wParam] = 1;
-	//			return 0;
-	//		case WM_KEYUP:
-	//		case WM_SYSKEYUP:
-	//			if (wParam < 256)
-	//				io.KeysDown[wParam] = 0;
-	//			return 0;
-	//		case WM_CHAR:
-	//			// You can also use ToAscii()+GetKeyboardState() to retrieve characters.
-	//			if (wParam > 0 && wParam < 0x10000)
-	//				io.AddInputCharacterUTF16((unsigned short)wParam);
-	//			return 0;
-	//		case WM_SETCURSOR:
-	//			if (LOWORD(lParam) == HTCLIENT && ImGui_ImplWin32_UpdateMouseCursor())
-	//				return 1;
-	//			return 0;
-	//		case WM_DEVICECHANGE:
-	//			if ((UINT)wParam == DBT_DEVNODES_CHANGED)
-	//				g_WantUpdateHasGamepad = true;
-	//			return 0;
-	//	}
-	//	return ::DefWindowProc(hWnd, msg, wParam, lParam);
-	//}
 
 }

@@ -63,6 +63,21 @@ namespace SG
 
 		EVENT_TYPE(AppUpdate)
 		EVENT_CATEGORY(EventCategoryApplication)
+	private:
+	};
+
+	class AppActiveEvent : public Event
+	{
+	public:
+		AppActiveEvent(WORD isActive)
+			:m_IsActive(isActive) {}
+
+		inline WORD IsActive() const { return m_IsActive; }
+
+		EVENT_TYPE(AppActive)
+		EVENT_CATEGORY(EventCategoryApplication)
+	private:
+		WORD m_IsActive;
 	};
 
 	class AppRenderEvent : public Event

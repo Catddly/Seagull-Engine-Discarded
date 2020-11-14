@@ -59,11 +59,11 @@ namespace SG
 		m_CommandList->Close();
 		m_SwapChain = CreateRef<DirectX12SwapChain>(m_DxgiFactory.Get(), m_RenderQueue);
 
-		CreateRtvAndDsvDescriptorsHeap();
+		CreateRtvDsvSrvDescriptorsHeap();
 		OnWindowResize(0, 0, Application::Get().GetWindow()->GetWidth(), Application::Get().GetWindow()->GetHeight());
 	}
 
-	void DirectX12RendererAPI::CreateRtvAndDsvDescriptorsHeap()
+	void DirectX12RendererAPI::CreateRtvDsvSrvDescriptorsHeap()
 	{
 		m_RtvHeap = CreateRef<DirectX12DescriptorHeap>(m_D3dDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
 		m_DsvHeap = CreateRef<DirectX12DescriptorHeap>(m_D3dDevice.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
@@ -135,7 +135,7 @@ namespace SG
 		m_CommandList->SetScissorRect(1, &m_ScissorRect);
 
 		// Clear the back buffer and depth buffer.
-		m_CommandList->ClearRtv(m_RtvHeap->GetView(m_SwapChain->GetCurrBufferIndex()), DirectX::Colors::Beige, 0, nullptr);
+		m_CommandList->ClearRtv(m_RtvHeap->GetView(m_SwapChain->GetCurrBufferIndex()), m_ClearColor.m128_f32, 0, nullptr);
 		m_CommandList->ClearDsv(m_DsvHeap->GetView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f,
 			0, 0, nullptr);
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Event/Event.h"
+#include "Utilis/DeltaTime.h"
 
 #include <string>
 
@@ -19,7 +20,7 @@ namespace SG
 		virtual void OnAttach() {}
 		virtual void OnDettach() {}
 
-		virtual void OnUpdate() {}
+		virtual void OnUpdate(DeltaTime dt) {}
 		virtual void OnImGuiRender() {}
 		virtual void OnEvent(Event& e) {}
 	private:

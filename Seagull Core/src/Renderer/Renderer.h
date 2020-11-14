@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Renderer/RendererAPI.h"
+
 namespace SG
 {
 
@@ -10,7 +12,11 @@ namespace SG
 		virtual ~Renderer() = default;
 
 		static void Init();
+		static void Shutdown();
+
+		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 	private:
+
 	};
 
 }

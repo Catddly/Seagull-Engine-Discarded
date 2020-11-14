@@ -5,6 +5,7 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <DirectXMath.h>
 
 #include "Core/Core.h"
 #include "DirectX12Context.h"
@@ -49,7 +50,7 @@ namespace SG
 		ID3D12Device1* GetDeviceNative() const { return m_D3dDevice.Get(); }
 	private:
 		void OnWindowResize(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-		void CreateRtvAndDsvDescriptorsHeap();
+		void CreateRtvDsvSrvDescriptorsHeap();
 		void CreateRtv();
 		void CreateDsv();
 	private:
@@ -74,6 +75,7 @@ namespace SG
 
 		D3D12_VIEWPORT m_ScreenViewport = {};
 		D3D12_RECT m_ScissorRect = {};
+		DirectX::XMVECTOR m_ClearColor = { 1.0f, 0.85f, 0.80f, 1.00f };
 	};
 
 }

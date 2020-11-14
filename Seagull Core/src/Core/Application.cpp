@@ -2,9 +2,10 @@
 #include "Application.h"
 
 #include "LogManager.h"
-#include "Utilis/Timestep.h"
+#include "Utilis/DeltaTime.h"
 #include "Event/Event.h"
 
+#include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
 #include "ImGui/ImGuiLayer.h"
@@ -18,12 +19,17 @@ namespace SG
 	bool Application::s_IsMinimized = false;
 	bool Application::s_IsInitialized = false;
 	bool Application::s_EnableEventLog = false;
+	bool Application::s_IsPaused = false;
 
 	Application::Application(const std::wstring& name)
 	{
 		SG_CORE_ASSERT(!s_Instance, "Application already exist!");
 		s_Instance = this;
 		s_AppName = name;
+
+		// LogManager initialized
+		SG::LogManager::Init();
+		m_GlobalTimer = CreateScope<Timer>("Global");
 	}
 
 	Application::~Application()
@@ -34,17 +40,14 @@ namespace SG
 
 	bool Application::Init(const HINSTANCE& wndInstance, int show)
 	{
-		// LogManager initialized
-		SG::LogManager::Init();
-
-		WindowProps m_MainWndProps = WindowProps(wndInstance, show);
-		m_MainWindow = Window::Create(m_MainWndProps);
+		WindowProps mainWndProps = WindowProps(wndInstance, show);
+		m_MainWindow = Window::Create(mainWndProps);
 		m_MainWindow->SetEventCallbackFn(SG_BIND_EVENT_FUNC(Application::OnEvent));
 
 		if (!m_MainWindow->OnCreate())
 			return false;
 
-		RenderCommand::Init();
+		Renderer::Init();
 
 		// Create ImGuiLayer
 		m_ImGuiLayer = new ImGuiLayer();
@@ -60,8 +63,10 @@ namespace SG
 
 	int Application::Run()
 	{
-		MSG msg = {0};
+		MSG msg;
+		ZeroMemory(&msg, sizeof(MSG));
 
+		m_GlobalTimer->Start();
 		// until receive WM_QUIT, if will keep looping
 		while (s_IsRunning)
 		{
@@ -73,12 +78,18 @@ namespace SG
 			}
 			else
 			{
+				if (s_IsPaused) // If App is paused, we don't update our frame
+					continue;
+
+				m_GlobalTimer->Tick();
+				DeltaTime dt(m_GlobalTimer->GetDeltaTime());
+
 				// main game loop
 				if (!s_IsMinimized)
 				{
 					for (auto layer : m_LayerStack)
 					{
-						layer->OnUpdate();
+						layer->OnUpdate(dt);
 					}
 
 					// render ImGui
@@ -123,6 +134,7 @@ namespace SG
 		dispatcher.Dispatch<MouseMovedEvent>(SG_BIND_EVENT_FUNC(Application::OnMouseMoved));
 		dispatcher.Dispatch<WindowCloseEvent>(SG_BIND_EVENT_FUNC(Application::OnWindowClose));
 		dispatcher.Dispatch<WindowResizeEvent>(SG_BIND_EVENT_FUNC(Application::OnWindowResize));
+		dispatcher.Dispatch<AppActiveEvent>(SG_BIND_EVENT_FUNC(Application::OnAppActive));
 
 		if (s_EnableEventLog)
 			SG_CORE_TRACE("{0}", e);
@@ -170,12 +182,22 @@ namespace SG
 			s_IsMinimized = true;
 			return false;
 		}
-
+		
 		if (s_IsInitialized)
 			RenderCommand::SetViewportSize(e.GetWidth(), e.GetHeight());
 		s_IsMinimized = false;
 
 		return false;
+	}
+
+	bool Application::OnAppActive(AppActiveEvent& e)
+	{
+		WORD stage = e.IsActive();
+		if (stage == WA_INACTIVE)
+			OnAppStop();
+		else
+			OnAppStart();
+		return true;
 	}
 
 }

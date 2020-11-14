@@ -7,6 +7,8 @@
 #include "Event/MouseEvent.h"
 #include "Event/ApplicationEvent.h"
 
+#include "Utilis/DeltaTime.h"
+
 namespace SG
 {
 
@@ -19,7 +21,7 @@ namespace SG
 		virtual void OnAttach() override;
 		virtual void OnDettach() override;
 
-		virtual void OnUpdate() override;
+		virtual void OnUpdate(DeltaTime dt) override;
 		virtual void OnEvent(Event& e) override;
 
 		void Begin();
