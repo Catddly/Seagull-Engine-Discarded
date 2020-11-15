@@ -75,12 +75,22 @@ public:
 //		style.WindowMinSize.x = windowMinSizeX;
 //#pragma endregion Imgui::DockSpace
 
+		static float interval = 0.0f;
+		static float fps = 0.0f, mspf = 0.0f;
+		interval += m_Dt;
+		if (interval >= 0.5f)
+		{
+			fps = 1.0f / m_Dt;
+			mspf = 1000.0f / fps;
+			interval = 0.0f;
+		}
+
 		ImGui::ShowDemoWindow();
 
 		ImGui::Begin("Test");
 		ImGui::Text("Hello!");
 		ImGui::Text("%.2f %.2f", SG::Input::GetMouseX(), SG::Input::GetMouseY());
-		ImGui::Text("Fps: %.3f, mspf: %.3f(ms)", 1.0f / m_Dt, 1000.0f / (1.0f / m_Dt));
+		ImGui::Text("Fps: %.3f, mspf: %.3f(ms)", fps, mspf);
 		ImGui::End();
 
 		//ImGui::End(); //Dock Space

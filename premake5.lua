@@ -12,17 +12,17 @@ workspace "Seagull"
 -- Debug-windows-x64
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir = { }
-IncludeDir["spdlog"] = "Seagull Core/vendor/spdlog/include"
-IncludeDir["imgui"] = "Seagull Core/vendor/imgui/imgui"
+IncludeDir["spdlog"] = "Seagull-Core/vendor/spdlog/include"
+IncludeDir["imgui"] = "Seagull-Core/vendor/imgui/imgui"
 
 group "Dependencies"
 
-    include "Seagull Core/vendor/imgui/imgui"
+    include "Seagull-Core/vendor/imgui/imgui"
 
 group ""
 
-project "Seagull Core"
-    location "Seagull Core"
+project "Seagull-Core"
+    location "Seagull-Core"
     kind "StaticLib"
     language "C++"
     cppdialect "C++17"
@@ -35,7 +35,7 @@ project "Seagull Core"
 
     -- precompile header
     pchheader "sgpch.h"
-    pchsource "Seagull Core/src/sgpch.cpp"
+    pchsource "Seagull-Core/src/sgpch.cpp"
 
     -- include files
     files
@@ -114,7 +114,7 @@ project "Sea"
     -- include directories
     includedirs
     {
-        "Seagull Core/src",
+        "Seagull-Core/src",
         "%{IncludeDir.spdlog}",
         "%{IncludeDir.imgui}"
     }
@@ -122,7 +122,7 @@ project "Sea"
     -- link libraries
     links
     {
-        "Seagull Core"
+        "Seagull-Core"
     }
 
 filter "system:windows"
